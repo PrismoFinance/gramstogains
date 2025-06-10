@@ -15,13 +15,13 @@ import {
 import {
   LayoutDashboard,
   ShoppingBag,
-  Users, // Kept for potential future use if admin users are managed
+  Users, 
   Lightbulb,
   Leaf,
   Settings,
   FileText,
   PlusCircle,
-  Building // Icon for Dispensaries
+  Building 
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -31,10 +31,10 @@ interface AppSidebarProps {
 
 const navItems = [
   { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard, roles: ['administrator', 'sales_representative'] },
-  { href: '/sales/new', label: 'New Order', icon: PlusCircle, roles: ['administrator', 'sales_representative'] }, // Renamed from New Sale
-  { href: '/sales/reports', label: 'Order Reports', icon: FileText, roles: ['administrator', 'sales_representative'] }, // Renamed from Sales Reports
+  { href: '/sales/new', label: 'New Order', icon: PlusCircle, roles: ['administrator', 'sales_representative'] }, 
+  { href: '/sales/reports', label: 'Order Reports', icon: FileText, roles: ['administrator', 'sales_representative'] }, 
   { href: '/products', label: 'Products', icon: ShoppingBag, roles: ['administrator'] },
-  { href: '/dispensaries', label: 'Dispensaries', icon: Building, roles: ['administrator'] }, // New item
+  { href: '/dispensaries', label: 'Dispensaries', icon: Building, roles: ['administrator'] }, 
   { href: '/insights', label: 'AI Insights', icon: Lightbulb, roles: ['administrator'] },
   // { href: '/users', label: 'User Management', icon: Users, roles: ['administrator'] },
   // { href: '/settings', label: 'Settings', icon: Settings, roles: ['administrator', 'sales_representative'] },
