@@ -39,19 +39,21 @@ export function ProductTable({ productTemplates, productBatches, onEdit, onDelet
 
   const getBatchDataForTemplate = (templateId: string) => {
     const batchesForTemplate = productBatches.filter(b => b.productTemplateId === templateId);
-    const activeBatches = batchesForTemplate.filter(b => b.activeStatus && b.currentStockQuantity > 0);
+    // Batches that are active AND have stock are used for averaging and total stock calculation
+    const activeStockedBatches = batchesForTemplate.filter(b => b.activeStatus && b.currentStockQuantity > 0);
     
-    const totalStock = activeBatches.reduce((sum, b) => sum + b.currentStockQuantity, 0);
+    const totalStock = activeStockedBatches.reduce((sum, b) => sum + b.currentStockQuantity, 0);
     
     let avgThc = 0;
     let avgCbd = 0;
-    if (activeBatches.length > 0) {
-      avgThc = activeBatches.reduce((sum, b) => sum + b.thcPercentage, 0) / activeBatches.length;
-      avgCbd = activeBatches.reduce((sum, b) => sum + b.cbdPercentage, 0) / activeBatches.length;
+    if (activeStockedBatches.length > 0) {
+      avgThc = activeStockedBatches.reduce((sum, b) => sum + b.thcPercentage, 0) / activeStockedBatches.length;
+      avgCbd = activeStockedBatches.reduce((sum, b) => sum + b.cbdPercentage, 0) / activeStockedBatches.length;
     }
+    // Count of batches that are marked as active (may or may not have stock)
     const activeBatchCount = batchesForTemplate.filter(b => b.activeStatus).length;
 
-    return { totalStock, avgThc, avgCbd, activeBatchCount };
+    return { totalStock, avgThc, avgCbd, activeBatchCount, hasActiveStockedBatches: activeStockedBatches.length > 0 };
   };
 
 
@@ -84,7 +86,7 @@ export function ProductTable({ productTemplates, productBatches, onEdit, onDelet
               </TableRow>
             )}
             {productTemplates.map((template) => {
-              const { totalStock, avgThc, avgCbd, activeBatchCount } = getBatchDataForTemplate(template.id);
+              const { totalStock, avgThc, avgCbd, activeBatchCount, hasActiveStockedBatches } = getBatchDataForTemplate(template.id);
               return (
                 <TableRow key={template.id} className="hover:bg-muted/50 transition-colors">
                   <TableCell>
@@ -107,8 +109,8 @@ export function ProductTable({ productTemplates, productBatches, onEdit, onDelet
                   </TableCell>
                   <TableCell>
                     <div className="flex flex-col items-start gap-1">
-                        <Badge variant="outline" className="gap-1 text-xs">
-                            <Layers className="h-3 w-3"/> {activeBatchCount} Active Batche(s)
+                        <Badge variant="outline" className="text-xs">
+                            <Layers className="mr-1 h-3 w-3"/> {activeBatchCount} Active
                         </Badge>
                         <Button
                             variant="link"
@@ -116,7 +118,7 @@ export function ProductTable({ productTemplates, productBatches, onEdit, onDelet
                             className="p-0 h-auto text-accent hover:text-accent/80 text-xs flex items-center gap-1"
                             onClick={() => onManageBatches(template)}
                         >
-                            <Settings2 className="h-3 w-3"/> Manage Batches
+                            <Settings2 className="h-3 w-3 mr-0.5"/> Manage Batches
                         </Button>
                     </div>
                   </TableCell>
@@ -126,8 +128,8 @@ export function ProductTable({ productTemplates, productBatches, onEdit, onDelet
                   <TableCell>
                     <Badge variant="outline">{template.strainType}</Badge>
                   </TableCell>
-                  <TableCell className="text-right">{activeBatches.length > 0 ? avgThc.toFixed(1) : 'N/A'}%</TableCell>
-                  <TableCell className="text-right">{activeBatches.length > 0 ? avgCbd.toFixed(1) : 'N/A'}%</TableCell>
+                  <TableCell className="text-right">{hasActiveStockedBatches ? avgThc.toFixed(1) : 'N/A'}%</TableCell>
+                  <TableCell className="text-right">{hasActiveStockedBatches ? avgCbd.toFixed(1) : 'N/A'}%</TableCell>
                   <TableCell>{template.unitOfMeasure}</TableCell>
                   <TableCell className="text-right">{totalStock}</TableCell>
                   <TableCell className="text-center">
