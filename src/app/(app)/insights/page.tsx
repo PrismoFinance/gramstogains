@@ -1,3 +1,4 @@
+
 'use client';
 
 import React, { useState } from 'react';
@@ -5,26 +6,32 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { Lightbulb, Loader2, AlertTriangle } from 'lucide-react';
-import { generateSalesInsights, type GenerateSalesInsightsInput, type GenerateSalesInsightsOutput } from '@/ai/flows/generate-sales-insights';
-import { mockProducts, mockSales } from '@/lib/mock-data';
-import type { SalesDataForAI } from '@/lib/types';
+import { Lightbulb, Loader2, AlertTriangle, HelpCircle } from 'lucide-react';
+import { generateSalesInsights, type GenerateSalesInsightsOutput } from '@/ai/flows/generate-sales-insights';
+import { mockProducts, mockWholesaleOrders, mockDispensaries } from '@/lib/mock-data';
+import type { WholesaleDataForAI } from '@/lib/types';
 import { useToast } from '@/hooks/use-toast';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 export default function AiInsightsPage() {
   const { user } = useAuth();
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
-  const [insights, setInsights] = useState<string | null>(null);
+  const [insightsResult, setInsightsResult] = useState<GenerateSalesInsightsOutput | null>(null);
   const [error, setError] = useState<string | null>(null);
   const { toast } = useToast();
 
-  const exampleSalesData: SalesDataForAI = {
-    products: mockProducts.map(({ id, name, category, price, stock }) => ({ id, name, category, price, stock })),
-    sales: mockSales.map(({ productId, quantity, totalAmount, saleDate, salesAssociateId }) => ({ productId, quantity, totalAmount, saleDate, salesAssociateId })),
+  const exampleWholesaleData: WholesaleDataForAI = {
+    products: mockProducts.map(({ id, productName, productCategory, strainType, thcPercentage, cbdPercentage, wholesalePricePerUnit, currentStockQuantity }) => ({ id, productName, productCategory, strainType, thcPercentage, cbdPercentage, wholesalePricePerUnit, currentStockQuantity })),
+    wholesaleOrders: mockWholesaleOrders.map(({ id, dispensaryId, productsOrdered, totalOrderAmount, orderDate, salesAssociateId, paymentStatus, metrcManifestId }) => ({ id, dispensaryId, productsOrdered, totalOrderAmount, orderDate, salesAssociateId, paymentStatus, metrcManifestId })),
+    dispensaries: mockDispensaries.map(({ id, dispensaryName, licenseNumber, address }) => ({ id, dispensaryName, licenseNumber, address })),
   };
-  const [salesDataInput, setSalesDataInput] = useState(JSON.stringify(exampleSalesData, null, 2));
+  const [wholesaleDataInput, setWholesaleDataInput] = useState(JSON.stringify(exampleWholesaleData, null, 2));
+  const [analysisFocus, setAnalysisFocus] = useState('');
+
 
   React.useEffect(() => {
     if (user && user.role !== 'administrator') {
@@ -38,21 +45,34 @@ export default function AiInsightsPage() {
 
   const handleGenerateInsights = async () => {
     setIsLoading(true);
-    setInsights(null);
+    setInsightsResult(null);
     setError(null);
     try {
-      const input: GenerateSalesInsightsInput = { salesData: salesDataInput };
-      // Validate JSON input
-      JSON.parse(salesDataInput);
+      let parsedData: WholesaleDataForAI;
+      try {
+        parsedData = JSON.parse(wholesaleDataInput);
+      } catch (e) {
+         throw new SyntaxError("Invalid JSON format in wholesale data. Please check your input.");
+      }
+      
+      // Basic validation (more thorough schema validation happens in the Genkit flow)
+      if (!parsedData.products || !parsedData.wholesaleOrders || !parsedData.dispensaries) {
+        throw new Error("Missing one or more required data fields (products, wholesaleOrders, dispensaries).");
+      }
 
-      const result: GenerateSalesInsightsOutput = await generateSalesInsights(input);
-      setInsights(result.insights);
+      const inputForAI: WholesaleDataForAI & { analysisFocus?: string } = {
+        ...parsedData,
+        analysisFocus: analysisFocus || undefined,
+      };
+
+      const result: GenerateSalesInsightsOutput = await generateSalesInsights(inputForAI);
+      setInsightsResult(result);
       toast({ title: 'Insights Generated', description: 'AI analysis complete.' });
     } catch (e: any) {
       console.error("Error generating insights:", e);
       let errorMessage = "Failed to generate insights. Please try again.";
       if (e instanceof SyntaxError) {
-        errorMessage = "Invalid JSON format in sales data. Please check your input.";
+        errorMessage = e.message;
       } else if (e.message) {
         errorMessage = e.message;
       }
@@ -69,28 +89,47 @@ export default function AiInsightsPage() {
         <div>
           <h1 className="text-3xl font-headline font-bold flex items-center">
             <Lightbulb className="mr-3 h-8 w-8 text-accent" />
-            AI-Powered Sales Insights
+            AI-Powered Wholesale Insights
           </h1>
-          <p className="text-muted-foreground">Analyze sales data to uncover trends and opportunities.</p>
+          <p className="text-muted-foreground">Analyze wholesale order data to uncover trends and opportunities.</p>
         </div>
       </div>
 
       <Card className="shadow-xl">
         <CardHeader>
-          <CardTitle>Sales Data Input</CardTitle>
+          <CardTitle>Wholesale Data Input</CardTitle>
           <CardDescription>
-            Paste your sales data in JSON format. The data should ideally include product details (ID, name, category, price, stock) and sales records (product ID, quantity, total amount, date, sales associate).
-            An example structure is pre-filled.
+            Paste your wholesale data in JSON format. The data should ideally include product details, wholesale orders, and dispensary information.
+            An example structure (based on current mock data) is pre-filled.
           </CardDescription>
         </CardHeader>
-        <CardContent>
+        <CardContent className="space-y-4">
           <Textarea
-            value={salesDataInput}
-            onChange={(e) => setSalesDataInput(e.target.value)}
-            placeholder="Enter sales data as JSON..."
+            value={wholesaleDataInput}
+            onChange={(e) => setWholesaleDataInput(e.target.value)}
+            placeholder="Enter wholesale data as JSON..."
             rows={15}
             className="font-code text-sm"
           />
+          <div>
+            <Label htmlFor="analysisFocus" className="flex items-center gap-1">
+              Analysis Focus (Optional)
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild><HelpCircle className="h-4 w-4 text-muted-foreground cursor-help" /></TooltipTrigger>
+                  <TooltipContent className="w-64">
+                    <p>Guide the AI by specifying areas of interest, e.g., "Identify underperforming products" or "Suggest new markets based on dispensary locations".</p>
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+            </Label>
+            <Input 
+              id="analysisFocus"
+              value={analysisFocus}
+              onChange={(e) => setAnalysisFocus(e.target.value)}
+              placeholder="e.g., Top selling strains to urban dispensaries"
+            />
+          </div>
         </CardContent>
         <CardFooter className="flex justify-end">
           <Button onClick={handleGenerateInsights} disabled={isLoading} className="bg-accent hover:bg-accent/90 text-accent-foreground">
@@ -118,18 +157,46 @@ export default function AiInsightsPage() {
         </Card>
       )}
 
-      {insights && (
-        <Card className="shadow-xl">
-          <CardHeader>
-            <CardTitle>Generated Insights</CardTitle>
-            <CardDescription>Review the AI-generated analysis and suggestions below.</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="prose prose-sm dark:prose-invert max-w-none p-4 bg-muted/30 rounded-md whitespace-pre-wrap">
-              {insights}
-            </div>
-          </CardContent>
-        </Card>
+      {insightsResult && (
+        <div className="space-y-4">
+            <Card className="shadow-xl">
+                <CardHeader>
+                    <CardTitle>Generated Insights</CardTitle>
+                    <CardDescription>Review the AI-generated analysis below.</CardDescription>
+                </CardHeader>
+                <CardContent>
+                    <div className="prose prose-sm dark:prose-invert max-w-none p-4 bg-muted/30 rounded-md whitespace-pre-wrap">
+                    {insightsResult.insights}
+                    </div>
+                </CardContent>
+            </Card>
+
+            {insightsResult.suggestedActions && insightsResult.suggestedActions.length > 0 && (
+                 <Card className="shadow-lg border-accent">
+                    <CardHeader>
+                        <CardTitle className="text-accent">Suggested Actions</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                        <ul className="list-disc pl-5 space-y-1 text-sm">
+                            {insightsResult.suggestedActions.map((action, idx) => <li key={idx}>{action}</li>)}
+                        </ul>
+                    </CardContent>
+                </Card>
+            )}
+
+            {insightsResult.warnings && insightsResult.warnings.length > 0 && (
+                 <Card className="shadow-lg border-destructive">
+                    <CardHeader>
+                        <CardTitle className="text-destructive">Warnings / Risks</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                        <ul className="list-disc pl-5 space-y-1 text-sm">
+                            {insightsResult.warnings.map((warning, idx) => <li key={idx}>{warning}</li>)}
+                        </ul>
+                    </CardContent>
+                </Card>
+            )}
+        </div>
       )}
     </div>
   );

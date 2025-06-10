@@ -1,30 +1,33 @@
+
 'use client';
 
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { DollarSign, ShoppingBag, Users, TrendingUp, FileText } from "lucide-react";
-import { mockProducts, mockSales } from "@/lib/mock-data"; // Assuming sales data is also in mock-data
-import { SalesChart } from "@/components/dashboard/SalesChart";
-import { RecentSalesTable } from "@/components/dashboard/RecentSalesTable";
+import { DollarSign, ShoppingBag, Users, TrendingUp, FileText, Truck } from "lucide-react"; // Added Truck for orders
+import { mockProducts, mockWholesaleOrders, mockDispensaries } from "@/lib/mock-data"; // Updated to mockWholesaleOrders
+import { SalesChart } from "@/components/dashboard/SalesChart"; // This can be repurposed for order values
+import { RecentOrdersTable } from "@/components/dashboard/RecentSalesTable"; // Renamed to RecentOrdersTable
 import { useAuth } from "@/contexts/AuthContext";
+import type { WholesaleOrder } from "@/lib/types";
 
 export default function DashboardPage() {
   const { user } = useAuth();
   
-  // Calculate some summary data (mocked)
-  const totalRevenue = mockSales.reduce((sum, sale) => sum + sale.totalAmount, 0);
-  const totalSales = mockSales.length;
-  const totalProducts = mockProducts.length;
+  const totalRevenue = mockWholesaleOrders.reduce((sum, order) => sum + order.totalOrderAmount, 0);
+  const totalOrders = mockWholesaleOrders.length;
+  const totalProducts = mockProducts.filter(p => p.activeStatus).length; // Count only active products
+  const totalDispensaries = mockDispensaries.length;
 
-  const chartData = mockSales.reduce((acc, sale) => {
-    const date = new Date(sale.saleDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+  // Chart data for wholesale orders over time
+  const chartData = mockWholesaleOrders.reduce((acc, order) => {
+    const date = new Date(order.orderDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
     const existingEntry = acc.find(entry => entry.date === date);
     if (existingEntry) {
-      existingEntry.sales += sale.totalAmount;
+      existingEntry.revenue += order.totalOrderAmount; // Changed from 'sales' to 'revenue'
     } else {
-      acc.push({ date, sales: sale.totalAmount });
+      acc.push({ date, revenue: order.totalOrderAmount });
     }
     return acc;
-  }, [] as { date: string; sales: number }[]).sort((a,b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+  }, [] as { date: string; revenue: number }[]).sort((a,b) => new Date(a.date).getTime() - new Date(b.date).getTime());
 
 
   return (
@@ -34,22 +37,22 @@ export default function DashboardPage() {
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         <Card className="shadow-lg hover:shadow-xl transition-shadow">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Revenue</CardTitle>
+            <CardTitle className="text-sm font-medium">Total Revenue (Wholesale)</CardTitle>
             <DollarSign className="h-5 w-5 text-accent" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">${totalRevenue.toFixed(2)}</div>
-            <p className="text-xs text-muted-foreground">+20.1% from last month (mock)</p>
+            <p className="text-xs text-muted-foreground">+18.5% from last month (mock)</p>
           </CardContent>
         </Card>
         <Card className="shadow-lg hover:shadow-xl transition-shadow">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Sales</CardTitle>
-            <FileText className="h-5 w-5 text-accent" />
+            <CardTitle className="text-sm font-medium">Total Wholesale Orders</CardTitle>
+            <Truck className="h-5 w-5 text-accent" /> {/* Changed icon */}
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">+{totalSales}</div>
-            <p className="text-xs text-muted-foreground">+15 since last week (mock)</p>
+            <div className="text-2xl font-bold">+{totalOrders}</div>
+            <p className="text-xs text-muted-foreground">+12 since last week (mock)</p>
           </CardContent>
         </Card>
         <Card className="shadow-lg hover:shadow-xl transition-shadow">
@@ -62,14 +65,14 @@ export default function DashboardPage() {
             <p className="text-xs text-muted-foreground">+2 new this month (mock)</p>
           </CardContent>
         </Card>
-        <Card className="shadow-lg hover:shadow-xl transition-shadow">
+         <Card className="shadow-lg hover:shadow-xl transition-shadow">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Sales Trend</CardTitle>
-            <TrendingUp className="h-5 w-5 text-accent" />
+            <CardTitle className="text-sm font-medium">Active Dispensaries</CardTitle>
+            <Users className="h-5 w-5 text-accent" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">Upward</div>
-            <p className="text-xs text-muted-foreground">Positive trend last 30 days (mock)</p>
+            <div className="text-2xl font-bold">{totalDispensaries}</div>
+            <p className="text-xs text-muted-foreground">+1 new this quarter (mock)</p>
           </CardContent>
         </Card>
       </div>
@@ -77,20 +80,22 @@ export default function DashboardPage() {
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-7">
         <Card className="lg:col-span-4 shadow-lg">
           <CardHeader>
-            <CardTitle>Sales Overview</CardTitle>
-            <CardDescription>A chart showing sales revenue over the recent period.</CardDescription>
+            <CardTitle>Wholesale Order Revenue Overview</CardTitle>
+            <CardDescription>A chart showing wholesale order revenue over the recent period.</CardDescription>
           </CardHeader>
           <CardContent className="pl-2">
-             <SalesChart data={chartData} />
+             {/* SalesChart component can be reused, just ensure dataKey matches */}
+             <SalesChart data={chartData} dataKey="revenue" /> 
           </CardContent>
         </Card>
         <Card className="lg:col-span-3 shadow-lg">
           <CardHeader>
-            <CardTitle>Recent Sales</CardTitle>
-            <CardDescription>Top 5 most recent sales transactions.</CardDescription>
+            <CardTitle>Recent Wholesale Orders</CardTitle>
+            <CardDescription>Top 5 most recent wholesale orders.</CardDescription>
           </CardHeader>
           <CardContent>
-            <RecentSalesTable sales={mockSales.slice(0, 5)} />
+            {/* Pass sorted orders, newest first */}
+            <RecentOrdersTable orders={mockWholesaleOrders.sort((a,b) => new Date(b.orderDate).getTime() - new Date(a.orderDate).getTime()).slice(0, 5)} />
           </CardContent>
         </Card>
       </div>

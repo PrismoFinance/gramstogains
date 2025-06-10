@@ -1,3 +1,4 @@
+
 'use client';
 
 import Image from 'next/image';
@@ -12,7 +13,7 @@ import {
 } from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Edit, Trash2, PackageOpen, PackageX } from 'lucide-react';
+import { Edit, Trash2, PackageOpen, PackageX, CheckCircle, XCircle } from 'lucide-react';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -41,16 +42,21 @@ export function ProductTable({ products, onEdit, onDelete }: ProductTableProps) 
               <TableHead className="w-[80px]">Image</TableHead>
               <TableHead>Name</TableHead>
               <TableHead>Category</TableHead>
-              <TableHead className="text-right">Price</TableHead>
+              <TableHead>Strain</TableHead>
+              <TableHead className="text-right">THC%</TableHead>
+              <TableHead className="text-right">CBD%</TableHead>
+              <TableHead className="text-right">Wholesale Price</TableHead>
+              <TableHead>Unit</TableHead>
               <TableHead className="text-right">Stock</TableHead>
               <TableHead className="text-center">Status</TableHead>
+              <TableHead className="text-center">Active</TableHead>
               <TableHead className="text-right w-[150px]">Actions</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {products.length === 0 && (
               <TableRow>
-                <TableCell colSpan={7} className="text-center py-10 text-muted-foreground">
+                <TableCell colSpan={12} className="text-center py-10 text-muted-foreground">
                   No products found.
                 </TableCell>
               </TableRow>
@@ -59,22 +65,28 @@ export function ProductTable({ products, onEdit, onDelete }: ProductTableProps) 
               <TableRow key={product.id} className="hover:bg-muted/50 transition-colors">
                 <TableCell>
                   <Image
-                    src={product.imageUrl || `https://placehold.co/60x40.png?text=${product.name.charAt(0)}`}
-                    alt={product.name}
+                    src={product.imageUrl || `https://placehold.co/60x40.png?text=${product.productName.charAt(0)}`}
+                    alt={product.productName}
                     width={60}
                     height={40}
                     className="rounded-md object-cover"
                     data-ai-hint="cannabis product"
                   />
                 </TableCell>
-                <TableCell className="font-medium">{product.name}</TableCell>
+                <TableCell className="font-medium">{product.productName}</TableCell>
                 <TableCell>
-                  <Badge variant="secondary">{product.category}</Badge>
+                  <Badge variant="secondary">{product.productCategory}</Badge>
                 </TableCell>
-                <TableCell className="text-right">${product.price.toFixed(2)}</TableCell>
-                <TableCell className="text-right">{product.stock}</TableCell>
+                <TableCell>
+                  <Badge variant="outline">{product.strainType}</Badge>
+                </TableCell>
+                <TableCell className="text-right">{product.thcPercentage.toFixed(1)}%</TableCell>
+                <TableCell className="text-right">{product.cbdPercentage.toFixed(1)}%</TableCell>
+                <TableCell className="text-right">${product.wholesalePricePerUnit.toFixed(2)}</TableCell>
+                <TableCell>{product.unitOfMeasure}</TableCell>
+                <TableCell className="text-right">{product.currentStockQuantity}</TableCell>
                 <TableCell className="text-center">
-                  {product.stock > 0 ? (
+                  {product.currentStockQuantity > 0 ? (
                     <Badge variant="default" className="bg-primary hover:bg-primary/90 text-primary-foreground">
                       <PackageOpen className="mr-1 h-3 w-3"/> In Stock
                     </Badge>
@@ -82,6 +94,13 @@ export function ProductTable({ products, onEdit, onDelete }: ProductTableProps) 
                     <Badge variant="destructive">
                       <PackageX className="mr-1 h-3 w-3" /> Out of Stock
                     </Badge>
+                  )}
+                </TableCell>
+                <TableCell className="text-center">
+                  {product.activeStatus ? (
+                     <CheckCircle className="h-5 w-5 text-primary mx-auto" />
+                  ) : (
+                     <XCircle className="h-5 w-5 text-destructive mx-auto" />
                   )}
                 </TableCell>
                 <TableCell className="text-right">
@@ -100,7 +119,7 @@ export function ProductTable({ products, onEdit, onDelete }: ProductTableProps) 
                       <AlertDialogHeader>
                         <AlertDialogTitle>Are you sure?</AlertDialogTitle>
                         <AlertDialogDescription>
-                          This action cannot be undone. This will permanently delete the product "{product.name}".
+                          This action cannot be undone. This will permanently delete the product "{product.productName}".
                         </AlertDialogDescription>
                       </AlertDialogHeader>
                       <AlertDialogFooter>

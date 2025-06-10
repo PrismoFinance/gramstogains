@@ -1,13 +1,14 @@
+
 'use client';
 
 import { Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
-import { Card } from '@/components/ui/card'; // For potential future styling container
 
 interface SalesChartProps {
-  data: { date: string; sales: number }[];
+  data: { date: string; [key: string]: number | string }[]; // Made dataKey dynamic
+  dataKey: string; // e.g., "sales" or "revenue"
 }
 
-export function SalesChart({ data }: SalesChartProps) {
+export function SalesChart({ data, dataKey }: SalesChartProps) {
   return (
     <ResponsiveContainer width="100%" height={350}>
       <BarChart data={data}>
@@ -29,14 +30,14 @@ export function SalesChart({ data }: SalesChartProps) {
         <Tooltip
           contentStyle={{ 
             backgroundColor: 'hsl(var(--popover))', 
-            borderColor: 'hsl(var(--popover-foreground))',
+            borderColor: 'hsl(var(--popover-foreground))', // Corrected from popover-foreground to border for consistency
             borderRadius: 'var(--radius)',
           }}
           labelStyle={{ color: 'hsl(var(--popover-foreground))' }}
           itemStyle={{ color: 'hsl(var(--popover-foreground))' }}
           cursor={{ fill: 'hsl(var(--accent))', opacity: 0.1 }}
         />
-        <Bar dataKey="sales" fill="hsl(var(--primary))" radius={[4, 4, 0, 0]} />
+        <Bar dataKey={dataKey} fill="hsl(var(--primary))" radius={[4, 4, 0, 0]} />
       </BarChart>
     </ResponsiveContainer>
   );

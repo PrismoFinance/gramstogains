@@ -1,27 +1,31 @@
+
 'use client';
 
-import { SalesTransactionForm } from '@/components/sales/SalesTransactionForm';
+import { WholesaleOrderForm } from '@/components/sales/SalesTransactionForm'; // Path remains same, component name inside is WholesaleOrderForm
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { mockProducts } from '@/lib/mock-data';
+import { mockProducts, mockDispensaries } from '@/lib/mock-data';
 import { useAuth } from '@/contexts/AuthContext';
 
-export default function NewSalePage() {
+export default function NewWholesaleOrderPage() {
   const { user } = useAuth();
 
   if (!user) {
-    // This should ideally be handled by the layout, but as a fallback
     return <p>Loading or not authorized...</p>; 
   }
   
   return (
-    <div className="max-w-2xl mx-auto">
+    <div className="max-w-3xl mx-auto">
       <Card className="shadow-xl">
         <CardHeader>
-          <CardTitle className="text-2xl font-headline">Record New Sale</CardTitle>
-          <CardDescription>Enter the details of the sales transaction.</CardDescription>
+          <CardTitle className="text-2xl font-headline">Create New Wholesale Order</CardTitle>
+          <CardDescription>Enter the details for the new wholesale order to a dispensary.</CardDescription>
         </CardHeader>
         <CardContent>
-          <SalesTransactionForm products={mockProducts} currentUser={user} />
+          <WholesaleOrderForm 
+            products={mockProducts.filter(p => p.activeStatus)} // Only allow active products to be ordered
+            dispensaries={mockDispensaries} 
+            currentUser={user} 
+          />
         </CardContent>
       </Card>
     </div>

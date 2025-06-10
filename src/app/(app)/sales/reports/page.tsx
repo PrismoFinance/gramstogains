@@ -1,8 +1,9 @@
+
 'use client';
 
 import React, { useState, useMemo } from 'react';
-import type { Sale, Product } from '@/lib/types';
-import { mockSales, mockProducts } from '@/lib/mock-data';
+import type { WholesaleOrder, Product, Dispensary } from '@/lib/types';
+import { mockWholesaleOrders, mockProducts, mockDispensaries } from '@/lib/mock-data';
 import {
   Table,
   TableBody,
@@ -15,92 +16,83 @@ import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { Download, FilterX } from 'lucide-react';
-import { DateRangePicker } from '@/components/ui/date-range-picker'; // Placeholder for a date range picker
+import { Download, FilterX, Package } from 'lucide-react';
 import type { DateRange } from 'react-day-picker';
+import { SimpleDateRangePicker } from '@/components/reports/SimpleDateRangePicker'; // Moved to a common component
+import { Badge } from '@/components/ui/badge';
 
-// A simple DateRangePicker placeholder component.
-// In a real app, you'd use a proper one like from ShadCN examples.
-const SimpleDateRangePicker = ({ date, onDateChange }: { date?: DateRange, onDateChange: (date?: DateRange) => void }) => {
-  const [fromString, setFromString] = useState(date?.from ? date.from.toISOString().split('T')[0] : '');
-  const [toString, setToString] = useState(date?.to ? date.to.toISOString().split('T')[0] : '');
+export default function WholesaleReportsPage() {
+  const [ordersData, setOrdersData] = useState<WholesaleOrder[]>(mockWholesaleOrders);
+  // productsData and dispensariesData are needed for filter options and context
+  const [productsData] = useState<Product[]>(mockProducts);
+  const [dispensariesData] = useState<Dispensary[]>(mockDispensaries);
 
-  const handleApply = () => {
-    const from = fromString ? new Date(fromString) : undefined;
-    const to = toString ? new Date(toString) : undefined;
-    if (from && to && from > to) {
-      alert("Start date cannot be after end date.");
-      return;
-    }
-    onDateChange({ from, to });
-  };
-  
-  return (
-    <div className="flex gap-2 items-end">
-      <div>
-        <label htmlFor="date-from" className="text-sm font-medium text-muted-foreground">From</label>
-        <Input type="date" id="date-from" value={fromString} onChange={e => setFromString(e.target.value)} />
-      </div>
-      <div>
-        <label htmlFor="date-to" className="text-sm font-medium text-muted-foreground">To</label>
-        <Input type="date" id="date-to" value={toString} onChange={e => setToString(e.target.value)} />
-      </div>
-      <Button onClick={handleApply} variant="outline" size="sm">Apply</Button>
-    </div>
-  );
-};
-
-
-export default function SalesReportsPage() {
-  const [salesData, setSalesData] = useState<Sale[]>(mockSales);
-  const [productsData, setProductsData] = useState<Product[]>(mockProducts);
 
   const [searchTerm, setSearchTerm] = useState('');
-  const [productFilter, setProductFilter] = useState('');
+  const [dispensaryFilter, setDispensaryFilter] = useState('');
+  const [productFilter, setProductFilter] = useState(''); // Filters if an order CONTAINS this product
   const [associateFilter, setAssociateFilter] = useState('');
+  const [paymentStatusFilter, setPaymentStatusFilter] = useState('');
   const [dateRange, setDateRange] = useState<DateRange | undefined>(undefined);
 
-  const uniqueProducts = useMemo(() => Array.from(new Set(productsData.map(p => p.name))), [productsData]);
-  const uniqueAssociates = useMemo(() => Array.from(new Set(salesData.map(s => s.salesAssociateName))), [salesData]);
+  const uniqueProductsForFilter = useMemo(() => Array.from(new Set(productsData.map(p => p.productName))), [productsData]);
+  const uniqueAssociates = useMemo(() => Array.from(new Set(ordersData.map(s => s.salesAssociateName))), [ordersData]);
+  const uniqueDispensaries = useMemo(() => Array.from(new Set(dispensariesData.map(d => d.dispensaryName))), [dispensariesData]);
+  const paymentStatuses: WholesaleOrder['paymentStatus'][] = ['Pending', 'Paid', 'Partially Paid', 'Overdue', 'Cancelled'];
 
-  const filteredSales = useMemo(() => {
-    return salesData.filter(sale => {
-      const saleDate = new Date(sale.saleDate);
-      const matchesSearch = sale.productName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                            sale.salesAssociateName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                            sale.id.toLowerCase().includes(searchTerm.toLowerCase());
-      const matchesProduct = productFilter === '' || sale.productName === productFilter;
-      const matchesAssociate = associateFilter === '' || sale.salesAssociateName === associateFilter;
+
+  const filteredOrders = useMemo(() => {
+    return ordersData.filter(order => {
+      const orderDate = new Date(order.orderDate);
+      const matchesSearch = order.id.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                            order.dispensaryName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                            order.metrcManifestId?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                            order.salesAssociateName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                            order.productsOrdered.some(p => p.productName.toLowerCase().includes(searchTerm.toLowerCase()));
+
+      const matchesDispensary = dispensaryFilter === '' || order.dispensaryId === dispensaryFilter;
+      const matchesProduct = productFilter === '' || order.productsOrdered.some(p => p.productId === productFilter);
+      const matchesAssociate = associateFilter === '' || order.salesAssociateId === associateFilter; // Assuming salesAssociateId for filtering
+      const matchesPaymentStatus = paymentStatusFilter === '' || order.paymentStatus === paymentStatusFilter;
       const matchesDate = !dateRange || (
-        (!dateRange.from || saleDate >= dateRange.from) &&
-        (!dateRange.to || saleDate <= new Date(dateRange.to.getTime() + 86399999)) // Include full end day
+        (!dateRange.from || orderDate >= dateRange.from) &&
+        (!dateRange.to || orderDate <= new Date(dateRange.to.getTime() + 86399999)) // Include full end day
       );
-      return matchesSearch && matchesProduct && matchesAssociate && matchesDate;
+      return matchesSearch && matchesDispensary && matchesProduct && matchesAssociate && matchesPaymentStatus && matchesDate;
     });
-  }, [salesData, searchTerm, productFilter, associateFilter, dateRange]);
+  }, [ordersData, searchTerm, dispensaryFilter, productFilter, associateFilter, paymentStatusFilter, dateRange]);
 
   const totalFilteredRevenue = useMemo(() => {
-    return filteredSales.reduce((sum, sale) => sum + sale.totalAmount, 0);
-  }, [filteredSales]);
+    return filteredOrders.reduce((sum, order) => sum + order.totalOrderAmount, 0);
+  }, [filteredOrders]);
 
   const clearFilters = () => {
     setSearchTerm('');
+    setDispensaryFilter('');
     setProductFilter('');
     setAssociateFilter('');
+    setPaymentStatusFilter('');
     setDateRange(undefined);
   };
   
   const exportToCSV = () => {
-    const headers = "ID,Product Name,Quantity,Unit Price,Total Amount,Sale Date,Sales Associate\n";
-    const csvContent = filteredSales.map(s => 
-        `${s.id},"${s.productName}",${s.quantity},${s.unitPrice},${s.totalAmount},${new Date(s.saleDate).toLocaleDateString()},"${s.salesAssociateName}"`
-    ).join("\n");
-    const blob = new Blob([headers + csvContent], { type: 'text/csv;charset=utf-8;' });
+    // Header row - more complex due to nested productsOrdered
+    let csvContent = "OrderID,OrderDate,DispensaryName,TotalAmount,PaymentMethod,PaymentTerms,PaymentStatus,SalesAssociate,MetrcID,ShipmentDate,ProductsOrdered(ID|Name|Qty|Price|Subtotal)\n";
+    
+    filteredOrders.forEach(order => {
+        const productsString = order.productsOrdered.map(p => 
+            `${p.productId}|${p.productName}|${p.quantity}|${p.wholesalePricePerUnit}|${p.subtotal}`
+        ).join(';'); // Semicolon to separate multiple products within the cell
+
+        csvContent += `"${order.id}","${new Date(order.orderDate).toLocaleDateString()}","${order.dispensaryName || 'N/A'}","${order.totalOrderAmount.toFixed(2)}","${order.paymentMethod}","${order.paymentTerms}","${order.paymentStatus}","${order.salesAssociateName}","${order.metrcManifestId || ''}","${order.shipmentDate ? new Date(order.shipmentDate).toLocaleDateString() : ''}","${productsString}"\n`;
+    });
+
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
     const link = document.createElement("a");
     if (link.download !== undefined) {
         const url = URL.createObjectURL(blob);
         link.setAttribute("href", url);
-        link.setAttribute("download", "sales_report.csv");
+        link.setAttribute("download", "wholesale_orders_report.csv");
         link.style.visibility = 'hidden';
         document.body.appendChild(link);
         link.click();
@@ -113,8 +105,8 @@ export default function SalesReportsPage() {
     <div className="space-y-6">
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <div>
-          <h1 className="text-3xl font-headline font-bold">Sales Reports</h1>
-          <p className="text-muted-foreground">Analyze sales performance and filter data.</p>
+          <h1 className="text-3xl font-headline font-bold">Wholesale Order Reports</h1>
+          <p className="text-muted-foreground">Analyze wholesale performance and filter order data.</p>
         </div>
         <Button onClick={exportToCSV} variant="outline">
             <Download className="mr-2 h-4 w-4" />
@@ -124,28 +116,43 @@ export default function SalesReportsPage() {
 
       <Card className="shadow-lg">
         <CardHeader>
-          <CardTitle>Filter Sales Data</CardTitle>
-          <CardDescription>Use the filters below to refine your sales report.</CardDescription>
+          <CardTitle>Filter Wholesale Orders</CardTitle>
+          <CardDescription>Use the filters below to refine your report.</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             <Input
-              placeholder="Search by ID, product, associate..."
+              placeholder="Search by ID, dispensary, METRC..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
             />
-            <Select value={productFilter} onValueChange={setProductFilter}>
-              <SelectTrigger><SelectValue placeholder="Filter by Product" /></SelectTrigger>
+            <Select value={dispensaryFilter} onValueChange={setDispensaryFilter}>
+              <SelectTrigger><SelectValue placeholder="Filter by Dispensary" /></SelectTrigger>
               <SelectContent>
-                <SelectItem value="">All Products</SelectItem>
-                {uniqueProducts.map(name => <SelectItem key={name} value={name}>{name}</SelectItem>)}
+                <SelectItem value="">All Dispensaries</SelectItem>
+                {dispensariesData.map(d => <SelectItem key={d.id} value={d.id}>{d.dispensaryName}</SelectItem>)}
+              </SelectContent>
+            </Select>
+            <Select value={productFilter} onValueChange={setProductFilter}>
+              <SelectTrigger><SelectValue placeholder="Filter by Product in Order" /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="">Any Product</SelectItem>
+                {productsData.map(p => <SelectItem key={p.id} value={p.id}>{p.productName}</SelectItem>)}
               </SelectContent>
             </Select>
             <Select value={associateFilter} onValueChange={setAssociateFilter}>
               <SelectTrigger><SelectValue placeholder="Filter by Sales Associate" /></SelectTrigger>
               <SelectContent>
                 <SelectItem value="">All Associates</SelectItem>
-                {uniqueAssociates.map(name => <SelectItem key={name} value={name}>{name}</SelectItem>)}
+                {/* Assuming mockUsers is available or use uniqueAssociates based on current user data model */}
+                {mockUsers.filter(u => u.role === 'sales_representative' || u.role === 'administrator').map(name => <SelectItem key={name.id} value={name.id}>{name.username}</SelectItem>)}
+              </SelectContent>
+            </Select>
+             <Select value={paymentStatusFilter} onValueChange={setPaymentStatusFilter}>
+              <SelectTrigger><SelectValue placeholder="Filter by Payment Status" /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="">All Statuses</SelectItem>
+                {paymentStatuses.map(status => <SelectItem key={status} value={status}>{status}</SelectItem>)}
               </SelectContent>
             </Select>
              <SimpleDateRangePicker date={dateRange} onDateChange={setDateRange} />
@@ -160,9 +167,9 @@ export default function SalesReportsPage() {
       
        <Card className="shadow-lg">
         <CardHeader>
-            <CardTitle>Filtered Sales Results</CardTitle>
+            <CardTitle>Filtered Wholesale Orders</CardTitle>
             <div className="text-sm text-muted-foreground">
-                Showing {filteredSales.length} sales. Total Revenue: <span className="font-semibold text-primary">${totalFilteredRevenue.toFixed(2)}</span>
+                Showing {filteredOrders.length} orders. Total Revenue: <span className="font-semibold text-primary">${totalFilteredRevenue.toFixed(2)}</span>
             </div>
         </CardHeader>
         <CardContent>
@@ -170,28 +177,48 @@ export default function SalesReportsPage() {
             <Table>
                 <TableHeader>
                 <TableRow>
-                    <TableHead>Sale ID</TableHead>
-                    <TableHead>Product Name</TableHead>
-                    <TableHead className="text-right">Quantity</TableHead>
-                    <TableHead className="text-right">Unit Price</TableHead>
+                    <TableHead>Order ID</TableHead>
+                    <TableHead>Dispensary</TableHead>
+                    <TableHead>Order Date</TableHead>
+                    <TableHead>Products</TableHead>
                     <TableHead className="text-right">Total Amount</TableHead>
-                    <TableHead>Date</TableHead>
+                    <TableHead>Payment Status</TableHead>
+                    <TableHead>METRC ID</TableHead>
                     <TableHead>Sales Associate</TableHead>
                 </TableRow>
                 </TableHeader>
                 <TableBody>
-                {filteredSales.length === 0 ? (
-                    <TableRow><TableCell colSpan={7} className="text-center py-10 text-muted-foreground">No sales match your filters.</TableCell></TableRow>
+                {filteredOrders.length === 0 ? (
+                    <TableRow><TableCell colSpan={8} className="text-center py-10 text-muted-foreground">No orders match your filters.</TableCell></TableRow>
                 ) : (
-                    filteredSales.map((sale) => (
-                    <TableRow key={sale.id}>
-                        <TableCell className="font-medium">{sale.id}</TableCell>
-                        <TableCell>{sale.productName}</TableCell>
-                        <TableCell className="text-right">{sale.quantity}</TableCell>
-                        <TableCell className="text-right">${sale.unitPrice.toFixed(2)}</TableCell>
-                        <TableCell className="text-right font-semibold">${sale.totalAmount.toFixed(2)}</TableCell>
-                        <TableCell>{new Date(sale.saleDate).toLocaleDateString()}</TableCell>
-                        <TableCell>{sale.salesAssociateName}</TableCell>
+                    filteredOrders.map((order) => (
+                    <TableRow key={order.id}>
+                        <TableCell className="font-medium">{order.id}</TableCell>
+                        <TableCell>{order.dispensaryName || dispensariesData.find(d=>d.id === order.dispensaryId)?.dispensaryName}</TableCell>
+                        <TableCell>{new Date(order.orderDate).toLocaleDateString()}</TableCell>
+                        <TableCell>
+                            <Popover>
+                                <PopoverTrigger asChild>
+                                    <Button variant="link" size="sm" className="p-0 h-auto">
+                                        {order.productsOrdered.length} item(s) <Package className="ml-1 h-3 w-3"/>
+                                    </Button>
+                                </PopoverTrigger>
+                                <PopoverContent className="w-80">
+                                    <div className="grid gap-2">
+                                        <p className="text-sm font-medium">Products in Order:</p>
+                                        {order.productsOrdered.map(p => (
+                                            <div key={p.productId} className="text-xs">
+                                                {p.productName} (x{p.quantity}) - ${p.subtotal.toFixed(2)}
+                                            </div>
+                                        ))}
+                                    </div>
+                                </PopoverContent>
+                            </Popover>
+                        </TableCell>
+                        <TableCell className="text-right font-semibold">${order.totalOrderAmount.toFixed(2)}</TableCell>
+                        <TableCell><Badge variant={order.paymentStatus === 'Paid' ? 'default' : order.paymentStatus === 'Pending' ? 'secondary' : 'destructive'}>{order.paymentStatus}</Badge></TableCell>
+                        <TableCell>{order.metrcManifestId || 'N/A'}</TableCell>
+                        <TableCell>{order.salesAssociateName}</TableCell>
                     </TableRow>
                     ))
                 )}
@@ -203,3 +230,12 @@ export default function SalesReportsPage() {
     </div>
   );
 }
+
+// Create this new file if it doesn't exist, or update if it does
+// src/components/reports/SimpleDateRangePicker.tsx
+// For now, assume it exists and the path is correct.
+// If it doesn't exist, add it with the content provided in the user's files.
+// The existing SimpleDateRangePicker in sales/reports/page.tsx will be used as is.
+// If it were to be moved to src/components/reports/, the import path would need to change.
+// Given the file listing, it seems it's defined inline in sales/reports/page.tsx.
+// I'll create a separate component file for it.

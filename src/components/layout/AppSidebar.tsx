@@ -1,3 +1,4 @@
+
 'use client';
 
 import Link from 'next/link';
@@ -14,13 +15,13 @@ import {
 import {
   LayoutDashboard,
   ShoppingBag,
-  Users,
-  DollarSign,
+  Users, // Kept for potential future use if admin users are managed
   Lightbulb,
   Leaf,
   Settings,
   FileText,
-  PlusCircle
+  PlusCircle,
+  Building // Icon for Dispensaries
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -30,9 +31,10 @@ interface AppSidebarProps {
 
 const navItems = [
   { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard, roles: ['administrator', 'sales_representative'] },
-  { href: '/sales/new', label: 'New Sale', icon: PlusCircle, roles: ['administrator', 'sales_representative'] },
-  { href: '/sales/reports', label: 'Sales Reports', icon: FileText, roles: ['administrator', 'sales_representative'] },
+  { href: '/sales/new', label: 'New Order', icon: PlusCircle, roles: ['administrator', 'sales_representative'] }, // Renamed from New Sale
+  { href: '/sales/reports', label: 'Order Reports', icon: FileText, roles: ['administrator', 'sales_representative'] }, // Renamed from Sales Reports
   { href: '/products', label: 'Products', icon: ShoppingBag, roles: ['administrator'] },
+  { href: '/dispensaries', label: 'Dispensaries', icon: Building, roles: ['administrator'] }, // New item
   { href: '/insights', label: 'AI Insights', icon: Lightbulb, roles: ['administrator'] },
   // { href: '/users', label: 'User Management', icon: Users, roles: ['administrator'] },
   // { href: '/settings', label: 'Settings', icon: Settings, roles: ['administrator', 'sales_representative'] },
@@ -81,7 +83,6 @@ export function AppSidebar({ user }: AppSidebarProps) {
         </SidebarMenu>
       </SidebarContent>
       <SidebarFooter className="mt-auto border-t border-sidebar-border p-2">
-        {/* Can add quick actions or user info here if desired */}
          <p className="text-xs text-muted-foreground group-data-[collapsible=icon]:hidden text-center">
             &copy; {new Date().getFullYear()}
         </p>
