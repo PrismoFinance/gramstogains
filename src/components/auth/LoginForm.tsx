@@ -9,9 +9,9 @@ import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
 import { useToast } from '@/hooks/use-toast';
-import { Loader2 } from 'lucide-react';
+import { Loader2, SkipForward } from 'lucide-react';
 
 const loginSchema = z.object({
   username: z.string().min(1, 'Username is required'),
@@ -22,6 +22,7 @@ type LoginFormValues = z.infer<typeof loginSchema>;
 
 export function LoginForm() {
   const [isLoading, setIsLoading] = useState(false);
+  const [isQuickAccessLoading, setIsQuickAccessLoading] = useState(false);
   const { login } = useAuth();
   const router = useRouter();
   const { toast } = useToast();
@@ -49,6 +50,22 @@ export function LoginForm() {
       });
       form.setError('username', { type: 'manual', message: ' ' }); // Clear specific field errors if needed
       form.setError('password', { type: 'manual', message: 'Invalid credentials' });
+    }
+  };
+
+  const handleQuickAccess = async () => {
+    setIsQuickAccessLoading(true);
+    const success = await login('admin'); // Log in as admin
+    setIsQuickAccessLoading(false);
+    if (success) {
+      toast({ title: 'Quick Access Successful', description: "Logged in as 'admin'." });
+      router.push('/dashboard');
+    } else {
+      toast({
+        title: 'Quick Access Failed',
+        description: "Could not log in as 'admin'. Ensure the user exists.",
+        variant: 'destructive',
+      });
     }
   };
 
@@ -86,11 +103,27 @@ export function LoginForm() {
               <p className="text-sm text-destructive">{form.formState.errors.password.message}</p>
             )}
           </div>
-          <Button type="submit" className="w-full bg-accent hover:bg-accent/90 text-accent-foreground" disabled={isLoading}>
+          <Button type="submit" className="w-full bg-accent hover:bg-accent/90 text-accent-foreground" disabled={isLoading || isQuickAccessLoading}>
             {isLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : 'Sign In'}
           </Button>
         </form>
       </CardContent>
+      <CardFooter className="flex flex-col gap-2 pt-4 border-t">
+         <p className="text-xs text-muted-foreground">For development:</p>
+         <Button
+            variant="outline"
+            className="w-full"
+            onClick={handleQuickAccess}
+            disabled={isLoading || isQuickAccessLoading}
+          >
+            {isQuickAccessLoading ? (
+              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+            ) : (
+              <SkipForward className="mr-2 h-4 w-4" />
+            )}
+            Quick Access (Admin)
+          </Button>
+      </CardFooter>
     </Card>
   );
 }
