@@ -13,28 +13,37 @@
 
 import {ai} from '@/ai/genkit';
 import {z} from 'genkit';
-import type { WholesaleDataForAI } from '@/lib/types'; 
+import type { WholesaleDataForAI, ProductTemplateForAI, ProductBatchForAI, WholesaleOrderForAI, Dispensary } from '@/lib/types'; 
 
 // Define Zod schemas for input validation based on WholesaleDataForAI
-const ProductForAISchema = z.object({
+
+const ProductTemplateForAISchema = z.object({
   id: z.string(),
   productName: z.string(),
   productCategory: z.string(),
   strainType: z.string(),
+});
+
+const ProductBatchForAISchema = z.object({
+  id: z.string(),
+  productTemplateId: z.string(),
+  metrcPackageId: z.string(),
   thcPercentage: z.number(),
   cbdPercentage: z.number(),
   wholesalePricePerUnit: z.number(),
   currentStockQuantity: z.number(),
-  metrcPackageId: z.string().optional().describe("METRC Package ID for the product batch, if available."),
 });
 
 const ProductOrderedForAISchema = z.object({
-  productId: z.string(),
-  productName: z.string(),
+  productTemplateId: z.string(),
+  productBatchId: z.string(),
+  productName: z.string(), // from template
+  batchMetrcPackageId: z.string(), // from batch
   quantity: z.number(),
-  wholesalePricePerUnit: z.number(),
+  wholesalePricePerUnit: z.number(), // from batch
   subtotal: z.number(),
-  metrcPackageId: z.string().optional().describe("METRC Package ID for the specific item sold, if available."),
+  thcPercentageAtSale: z.number().optional(), // from batch
+  cbdPercentageAtSale: z.number().optional(), // from batch
 });
 
 const WholesaleOrderForAISchema = z.object({
@@ -45,7 +54,7 @@ const WholesaleOrderForAISchema = z.object({
   orderDate: z.string(), // ISO date string
   salesAssociateId: z.string(),
   paymentStatus: z.string(),
-  metrcManifestId: z.string().optional().describe("METRC Manifest ID for the entire order/transfer, if available."),
+  metrcManifestId: z.string().optional(),
 });
 
 const DispensaryForAISchema = z.object({
@@ -56,10 +65,11 @@ const DispensaryForAISchema = z.object({
 });
 
 const GenerateSalesInsightsInputSchema = z.object({
-  products: z.array(ProductForAISchema).describe("List of products offered by the manufacturing lab."),
-  wholesaleOrders: z.array(WholesaleOrderForAISchema).describe("List of wholesale orders placed by dispensaries."),
+  productTemplates: z.array(ProductTemplateForAISchema).describe("List of product templates offered by the manufacturing lab."),
+  productBatches: z.array(ProductBatchForAISchema).describe("List of specific product batches, each with a METRC ID, test results, and stock."),
+  wholesaleOrders: z.array(WholesaleOrderForAISchema).describe("List of wholesale orders placed by dispensaries, detailing which batches were sold."),
   dispensaries: z.array(DispensaryForAISchema).describe("List of dispensaries the lab sells to."),
-  analysisFocus: z.string().optional().describe("Optional: Specific area or question to focus the analysis on (e.g., 'Identify underperforming products', 'Suggest new product categories based on dispensary demand').")
+  analysisFocus: z.string().optional().describe("Optional: Specific area or question to focus the analysis on.")
 });
 export type GenerateSalesInsightsInput = z.infer<typeof GenerateSalesInsightsInputSchema>;
 
@@ -67,13 +77,14 @@ export type GenerateSalesInsightsInput = z.infer<typeof GenerateSalesInsightsInp
 const GenerateSalesInsightsOutputSchema = z.object({
   insights: z.string().describe('AI-generated insights, trends, and actionable suggestions for optimizing wholesale operations and product strategy.'),
   suggestedActions: z.array(z.string()).optional().describe("List of concrete actions suggested by the AI."),
-  warnings: z.array(z.string()).optional().describe("Potential warnings or risks identified from the data (e.g., low stock for popular items, declining sales for a product line).")
+  warnings: z.array(z.string()).optional().describe("Potential warnings or risks identified from the data (e.g., low stock for popular batches, declining sales for a product line).")
 });
 export type GenerateSalesInsightsOutput = z.infer<typeof GenerateSalesInsightsOutputSchema>;
 
 export async function generateSalesInsights(input: WholesaleDataForAI & { analysisFocus?: string }): Promise<GenerateSalesInsightsOutput> {
   const validatedInput: GenerateSalesInsightsInput = {
-    products: input.products,
+    productTemplates: input.productTemplates,
+    productBatches: input.productBatches,
     wholesaleOrders: input.wholesaleOrders,
     dispensaries: input.dispensaries,
     analysisFocus: input.analysisFocus,
@@ -85,34 +96,38 @@ const prompt = ai.definePrompt({
   name: 'generateWholesaleInsightsPrompt',
   input: {schema: GenerateSalesInsightsInputSchema},
   output: {schema: GenerateSalesInsightsOutputSchema},
-  prompt: `You are an AI business analyst for a cannabis manufacturing lab. Your role is to analyze wholesale order data, product inventory, and dispensary information to provide actionable insights.
+  prompt: `You are an AI business analyst for a cannabis manufacturing lab. Your role is to analyze wholesale order data, product inventory (templates and specific batches), and dispensary information to provide actionable insights.
 
   Data Provided:
-  - Products: Details about each product (name, category, strain, THC/CBD, price, stock, METRC Package ID).
-  - Wholesale Orders: Records of orders placed by dispensaries (products ordered with METRC Package IDs, quantities, total amounts, dates, payment status, METRC Manifest ID).
+  - Product Templates: General definitions of products (name, category, strain).
+  - Product Batches: Specific METRC-tagged batches of products, including their cannabinoid percentages, stock levels, and price. Each batch links to a product template.
+  - Wholesale Orders: Records of orders placed by dispensaries. Each ordered item specifies the product template, the specific product batch sold (with its METRC ID and cannabinoid profile at sale), quantity, and subtotal. Orders also include METRC Manifest IDs.
   - Dispensaries: Information about the dispensaries that are customers.
 
   Analysis Task:
-  Based on the provided data (Products: {{{json products}}}, Wholesale Orders: {{{json wholesaleOrders}}}, Dispensaries: {{{json dispensaries}}}), perform a comprehensive analysis.
-  If METRC Package IDs are present for products or ordered items, consider these for more granular batch-level analysis where relevant (e.g., identifying if specific batches/packages are selling faster or preferred by certain dispensaries).
+  Based on the provided data (Product Templates: {{{json productTemplates}}}, Product Batches: {{{json productBatches}}}, Wholesale Orders: {{{json wholesaleOrders}}}, Dispensaries: {{{json dispensaries}}}), perform a comprehensive analysis.
+  
+  Key considerations:
+  - Link ordered items back to specific Product Batches using productBatchId to analyze performance of individual batches (e.g., sales velocity, dispensary preference for specific METRC IDs or cannabinoid profiles within the same product template).
+  - Aggregate batch data to analyze Product Template performance (e.g., overall demand for "Green Crack Flower" across all its batches).
 
   {{#if analysisFocus}}
   Specifically focus on: {{{analysisFocus}}}
   {{else}}
   Consider the following areas:
-  1.  Identify top-selling products and product categories to dispensaries.
-  2.  Analyze purchasing patterns of different dispensaries. Are there regional preferences or dispensary types that favor certain products or even specific METRC-tracked batches?
-  3.  Detect trends in product demand (e.g., rising or falling popularity of certain strains, categories, or THC/CBD profiles).
-  4.  Assess inventory levels against sales velocity. Highlight any products with low stock that are in high demand, or high stock with low demand.
-  5.  Identify potential gaps in the product portfolio based on dispensary purchasing patterns or market trends.
-  6.  Suggest strategies to optimize sales, such as targeted promotions for certain dispensaries, new product development opportunities, or adjustments to wholesale pricing.
-  7.  If there are significant gaps between current inventory/product offerings and dispensary needs/market demand, suggest exploring new raw material vendors or production adjustments.
+  1.  Identify top-selling Product Templates and top-selling individual Product Batches (by METRC ID).
+  2.  Analyze purchasing patterns of different dispensaries. Do they prefer specific Product Templates, or even specific batches (e.g., higher THC batches of the same product)?
+  3.  Detect trends in demand for Product Templates and specific cannabinoid profiles (e.g., are higher THC batches selling faster?).
+  4.  Assess inventory levels of Product Batches against their sales velocity. Highlight any batches with low stock that are in high demand, or high stock with low demand.
+  5.  Identify potential gaps in the product portfolio (based on Product Templates) or batch characteristics (e.g., need for more high-CBD batches of a popular template).
+  6.  Suggest strategies to optimize sales, such as promoting specific batches to certain dispensaries, or adjusting production focus based on batch performance.
+  7.  If there are significant gaps between current batch inventory/characteristics and dispensary needs/market demand, suggest exploring new raw material vendors or production adjustments for future batches.
   {{/if}}
 
   Output Requirements:
-  -   **insights**: Provide a detailed narrative report of your findings, including key observations, identified correlations, and overall business insights.
-  -   **suggestedActions**: (Optional) List 3-5 concrete, actionable recommendations based on your analysis.
-  -   **warnings**: (Optional) List any potential risks or warnings, such as popular items running low on stock, or products with declining sales.
+  -   **insights**: Provide a detailed narrative report of your findings, including key observations, identified correlations, and overall business insights. Distinguish between template-level and batch-level findings.
+  -   **suggestedActions**: (Optional) List 3-5 concrete, actionable recommendations.
+  -   **warnings**: (Optional) List any potential risks or warnings.
 
   Be concise, data-driven, and focus on providing practical value to the manufacturing lab's management.
   `,

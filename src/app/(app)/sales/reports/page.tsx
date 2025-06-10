@@ -2,8 +2,8 @@
 'use client';
 
 import React, { useState, useMemo } from 'react';
-import type { WholesaleOrder, Product, Dispensary } from '@/lib/types';
-import { mockWholesaleOrders, mockProducts, mockDispensaries, mockUsers } from '@/lib/mock-data';
+import type { WholesaleOrder, ProductTemplate, ProductBatch, Dispensary } from '@/lib/types';
+import { mockWholesaleOrders, mockProductTemplates, mockProductBatches, mockDispensaries, mockUsers } from '@/lib/mock-data';
 import {
   Table,
   TableBody,
@@ -16,7 +16,7 @@ import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { Download, FilterX, Package, Tag } from 'lucide-react';
+import { Download, FilterX, Package, Tag, Layers } from 'lucide-react';
 import type { DateRange } from 'react-day-picker';
 import { SimpleDateRangePicker } from '@/components/reports/SimpleDateRangePicker';
 import { Badge } from '@/components/ui/badge';
@@ -25,21 +25,20 @@ import { Popover, PopoverTrigger, PopoverContent } from '@/components/ui/popover
 const ALL_FILTER_VALUE = "_all_";
 
 export default function WholesaleReportsPage() {
-  const [ordersData, setOrdersData] = useState<WholesaleOrder[]>(mockWholesaleOrders);
-  const [productsData] = useState<Product[]>(mockProducts);
+  const [ordersData] = useState<WholesaleOrder[]>(mockWholesaleOrders);
+  const [productTemplatesData] = useState<ProductTemplate[]>(mockProductTemplates);
+  // const [productBatchesData] = useState<ProductBatch[]>(mockProductBatches); // Not directly used for filtering yet, but available
   const [dispensariesData] = useState<Dispensary[]>(mockDispensaries);
 
 
   const [searchTerm, setSearchTerm] = useState('');
   const [dispensaryFilter, setDispensaryFilter] = useState(ALL_FILTER_VALUE);
-  const [productFilter, setProductFilter] = useState(ALL_FILTER_VALUE);
+  const [productTemplateFilter, setProductTemplateFilter] = useState(ALL_FILTER_VALUE); // Changed from productFilter
   const [associateFilter, setAssociateFilter] = useState(ALL_FILTER_VALUE);
   const [paymentStatusFilter, setPaymentStatusFilter] = useState(ALL_FILTER_VALUE);
   const [dateRange, setDateRange] = useState<DateRange | undefined>(undefined);
 
-  const uniqueProductsForFilter = useMemo(() => Array.from(new Set(productsData.map(p => p.productName))), [productsData]);
   const uniqueAssociates = useMemo(() => Array.from(new Set(ordersData.map(s => s.salesAssociateName))), [ordersData]);
-  const uniqueDispensaries = useMemo(() => Array.from(new Set(dispensariesData.map(d => d.dispensaryName))), [dispensariesData]);
   const paymentStatuses: WholesaleOrder['paymentStatus'][] = ['Pending', 'Paid', 'Partially Paid', 'Overdue', 'Cancelled'];
 
 
@@ -51,21 +50,21 @@ export default function WholesaleReportsPage() {
                             order.metrcManifestId?.toLowerCase().includes(searchTerm.toLowerCase()) ||
                             order.salesAssociateName.toLowerCase().includes(searchTerm.toLowerCase()) ||
                             order.productsOrdered.some(p => 
-                                p.productName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                                p.metrcPackageId?.toLowerCase().includes(searchTerm.toLowerCase())
+                                p.productName.toLowerCase().includes(searchTerm.toLowerCase()) || // Search by product name from template
+                                p.batchMetrcPackageId?.toLowerCase().includes(searchTerm.toLowerCase()) // Search by batch METRC ID
                             );
 
       const matchesDispensary = dispensaryFilter === ALL_FILTER_VALUE || order.dispensaryId === dispensaryFilter;
-      const matchesProduct = productFilter === ALL_FILTER_VALUE || order.productsOrdered.some(p => p.productId === productFilter);
+      const matchesProductTemplate = productTemplateFilter === ALL_FILTER_VALUE || order.productsOrdered.some(p => p.productTemplateId === productTemplateFilter);
       const matchesAssociate = associateFilter === ALL_FILTER_VALUE || order.salesAssociateId === associateFilter;
       const matchesPaymentStatus = paymentStatusFilter === ALL_FILTER_VALUE || order.paymentStatus === paymentStatusFilter;
       const matchesDate = !dateRange || (
         (!dateRange.from || orderDate >= dateRange.from) &&
         (!dateRange.to || orderDate <= new Date(dateRange.to.getTime() + 86399999)) // Include full end day
       );
-      return matchesSearch && matchesDispensary && matchesProduct && matchesAssociate && matchesPaymentStatus && matchesDate;
+      return matchesSearch && matchesDispensary && matchesProductTemplate && matchesAssociate && matchesPaymentStatus && matchesDate;
     });
-  }, [ordersData, searchTerm, dispensaryFilter, productFilter, associateFilter, paymentStatusFilter, dateRange]);
+  }, [ordersData, searchTerm, dispensaryFilter, productTemplateFilter, associateFilter, paymentStatusFilter, dateRange]);
 
   const totalFilteredRevenue = useMemo(() => {
     return filteredOrders.reduce((sum, order) => sum + order.totalOrderAmount, 0);
@@ -74,18 +73,18 @@ export default function WholesaleReportsPage() {
   const clearFilters = () => {
     setSearchTerm('');
     setDispensaryFilter(ALL_FILTER_VALUE);
-    setProductFilter(ALL_FILTER_VALUE);
+    setProductTemplateFilter(ALL_FILTER_VALUE);
     setAssociateFilter(ALL_FILTER_VALUE);
     setPaymentStatusFilter(ALL_FILTER_VALUE);
     setDateRange(undefined);
   };
   
   const exportToCSV = () => {
-    let csvContent = "OrderID,OrderDate,DispensaryName,TotalAmount,PaymentMethod,PaymentTerms,PaymentStatus,SalesAssociate,MetrcManifestID,ShipmentDate,ProductsOrdered(ID|Name|Qty|Price|Subtotal|MetrcPkgID)\n";
+    let csvContent = "OrderID,OrderDate,DispensaryName,TotalAmount,PaymentMethod,PaymentTerms,PaymentStatus,SalesAssociate,MetrcManifestID,ShipmentDate,ProductsOrdered(TemplateID|BatchID|ProductName|BatchMETRC_ID|Qty|Price|Subtotal|THC%|CBD%)\n";
     
     filteredOrders.forEach(order => {
         const productsString = order.productsOrdered.map(p => 
-            `${p.productId}|${p.productName}|${p.quantity}|${p.wholesalePricePerUnit}|${p.subtotal}|${p.metrcPackageId || ''}`
+            `${p.productTemplateId}|${p.productBatchId}|${p.productName}|${p.batchMetrcPackageId || ''}|${p.quantity}|${p.wholesalePricePerUnit}|${p.subtotal}|${p.thcPercentageAtSale?.toFixed(1) || ''}|${p.cbdPercentageAtSale?.toFixed(1) || ''}`
         ).join(';');
 
         csvContent += `"${order.id}","${new Date(order.orderDate).toLocaleDateString()}","${order.dispensaryName || 'N/A'}","${order.totalOrderAmount.toFixed(2)}","${order.paymentMethod}","${order.paymentTerms}","${order.paymentStatus}","${order.salesAssociateName}","${order.metrcManifestId || ''}","${order.shipmentDate ? new Date(order.shipmentDate).toLocaleDateString() : ''}","${productsString}"\n`;
@@ -137,18 +136,18 @@ export default function WholesaleReportsPage() {
                 {dispensariesData.map(d => <SelectItem key={d.id} value={d.id}>{d.dispensaryName}</SelectItem>)}
               </SelectContent>
             </Select>
-            <Select value={productFilter} onValueChange={setProductFilter}>
-              <SelectTrigger><SelectValue placeholder="Filter by Product in Order" /></SelectTrigger>
+            <Select value={productTemplateFilter} onValueChange={setProductTemplateFilter}>
+              <SelectTrigger><SelectValue placeholder="Filter by Product Template" /></SelectTrigger>
               <SelectContent>
-                <SelectItem value={ALL_FILTER_VALUE}>Any Product</SelectItem>
-                {productsData.map(p => <SelectItem key={p.id} value={p.id}>{p.productName}</SelectItem>)}
+                <SelectItem value={ALL_FILTER_VALUE}>Any Product Template</SelectItem>
+                {productTemplatesData.map(pt => <SelectItem key={pt.id} value={pt.id}>{pt.productName}</SelectItem>)}
               </SelectContent>
             </Select>
             <Select value={associateFilter} onValueChange={setAssociateFilter}>
               <SelectTrigger><SelectValue placeholder="Filter by Sales Associate" /></SelectTrigger>
               <SelectContent>
                 <SelectItem value={ALL_FILTER_VALUE}>All Associates</SelectItem>
-                {mockUsers.filter(u => u.role === 'sales_representative' || u.role === 'administrator').map(name => <SelectItem key={name.id} value={name.id}>{name.username}</SelectItem>)}
+                {mockUsers.filter(u => u.role === 'sales_representative' || u.role === 'administrator').map(user => <SelectItem key={user.id} value={user.id}>{user.username}</SelectItem>)}
               </SelectContent>
             </Select>
              <Select value={paymentStatusFilter} onValueChange={setPaymentStatusFilter}>
@@ -183,7 +182,7 @@ export default function WholesaleReportsPage() {
                     <TableHead>Order ID</TableHead>
                     <TableHead>Dispensary</TableHead>
                     <TableHead>Order Date</TableHead>
-                    <TableHead>Products</TableHead>
+                    <TableHead>Products (Batches)</TableHead>
                     <TableHead className="text-right">Total Amount</TableHead>
                     <TableHead>Payment Status</TableHead>
                     <TableHead>METRC Manifest</TableHead>
@@ -203,20 +202,21 @@ export default function WholesaleReportsPage() {
                             <Popover>
                                 <PopoverTrigger asChild>
                                     <Button variant="link" size="sm" className="p-0 h-auto text-left">
-                                        {order.productsOrdered.length} item(s) <Package className="ml-1 h-3 w-3 inline-block"/>
+                                        {order.productsOrdered.length} item(s) <Layers className="ml-1 h-3 w-3 inline-block"/>
                                     </Button>
                                 </PopoverTrigger>
                                 <PopoverContent className="w-96">
                                     <div className="grid gap-2">
-                                        <p className="text-sm font-medium mb-1">Products in Order:</p>
+                                        <p className="text-sm font-medium mb-1">Products in Order (Batches):</p>
                                         {order.productsOrdered.map(p => (
-                                            <div key={p.productId} className="text-xs border-b pb-1 mb-1 last:border-b-0 last:pb-0 last:mb-0">
+                                            <div key={p.productBatchId} className="text-xs border-b pb-1 mb-1 last:border-b-0 last:pb-0 last:mb-0">
                                                 <div className="font-medium">{p.productName} (x{p.quantity}) - ${p.subtotal.toFixed(2)}</div>
-                                                {p.metrcPackageId && (
-                                                    <div className="text-muted-foreground flex items-center">
-                                                        <Tag className="h-3 w-3 mr-1"/> METRC Pkg: {p.metrcPackageId}
-                                                    </div>
-                                                )}
+                                                <div className="text-muted-foreground flex items-center">
+                                                    <Tag className="h-3 w-3 mr-1"/> Batch METRC: {p.batchMetrcPackageId}
+                                                </div>
+                                                <div className="text-muted-foreground">
+                                                    THC: {p.thcPercentageAtSale?.toFixed(1) || 'N/A'}% | CBD: {p.cbdPercentageAtSale?.toFixed(1) || 'N/A'}%
+                                                </div>
                                             </div>
                                         ))}
                                     </div>

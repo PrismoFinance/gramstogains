@@ -1,13 +1,13 @@
 
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { ProductTable } from '@/components/products/ProductTable';
 import { ProductDialog } from '@/components/products/ProductDialog';
 import { Button } from '@/components/ui/button';
 import { PlusCircle } from 'lucide-react';
-import { mockProducts as initialMockProducts } from '@/lib/mock-data';
-import type { Product } from '@/lib/types';
+import { mockProductTemplates as initialMockProductTemplates, mockProductBatches as initialMockProductBatches } from '@/lib/mock-data'; // Updated mock data
+import type { ProductTemplate, ProductBatch } from '@/lib/types'; // Updated types
 import { useAuth } from '@/contexts/AuthContext';
 import { useRouter } from 'next/navigation';
 import { Input } from '@/components/ui/input';
@@ -16,9 +16,10 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 const ALL_FILTER_VALUE = "_all_";
 
 export default function ProductsPage() {
-  const [products, setProducts] = useState<Product[]>(initialMockProducts);
+  const [productTemplates, setProductTemplates] = useState<ProductTemplate[]>(initialMockProductTemplates);
+  const [productBatches, setProductBatches] = useState<ProductBatch[]>(initialMockProductBatches); // Added state for batches
   const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const [editingProduct, setEditingProduct] = useState<Product | null>(null);
+  const [editingProductTemplate, setEditingProductTemplate] = useState<ProductTemplate | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [productCategoryFilter, setProductCategoryFilter] = useState(ALL_FILTER_VALUE);
 
@@ -35,56 +36,64 @@ export default function ProductsPage() {
      return <p className="text-center py-10">Access Denied. Administrator role required.</p>;
   }
 
-  const handleAddProduct = () => {
-    setEditingProduct(null);
+  const handleAddProductTemplate = () => {
+    setEditingProductTemplate(null);
     setIsDialogOpen(true);
   };
 
-  const handleEditProduct = (product: Product) => {
-    setEditingProduct(product);
+  const handleEditProductTemplate = (template: ProductTemplate) => {
+    setEditingProductTemplate(template);
     setIsDialogOpen(true);
   };
 
-  const handleDeleteProduct = (productId: string) => {
-    setProducts(products.filter(p => p.id !== productId));
-    // In a real app, call an API to delete
+  const handleDeleteProductTemplate = (templateId: string) => {
+    setProductTemplates(productTemplates.filter(pt => pt.id !== templateId));
+    // Also remove associated batches
+    setProductBatches(productBatches.filter(pb => pb.productTemplateId !== templateId));
+    // In a real app, call an API to delete template and its batches
   };
 
-  const handleSaveProduct = (product: Product) => {
-    if (editingProduct) {
-      setProducts(products.map(p => (p.id === product.id ? product : p)));
+  const handleSaveProductTemplate = (template: ProductTemplate) => {
+    if (editingProductTemplate) {
+      setProductTemplates(productTemplates.map(pt => (pt.id === template.id ? template : pt)));
     } else {
-      const newProductWithId = { ...product, id: product.id || `prod${Date.now()}` };
-      setProducts([...products, newProductWithId]);
+      const newTemplateWithId = { ...template, id: template.id || `pt${Date.now()}` };
+      setProductTemplates([...productTemplates, newTemplateWithId]);
     }
     // In a real app, call an API to save
   };
 
-  const filteredProducts = products.filter(product =>
-    product.productName.toLowerCase().includes(searchTerm.toLowerCase()) &&
-    (productCategoryFilter === ALL_FILTER_VALUE || product.productCategory === productCategoryFilter)
-  );
+  // TODO: Implement batch management (add, edit, delete individual batches)
+  // const handleManageBatches = (templateId: string) => {
+  //   console.log("Manage batches for template ID:", templateId);
+  //   // This would typically open a new dialog or navigate to a batch management page
+  // };
+
+  const filteredProductTemplates = useMemo(() => productTemplates.filter(template =>
+    template.productName.toLowerCase().includes(searchTerm.toLowerCase()) &&
+    (productCategoryFilter === ALL_FILTER_VALUE || template.productCategory === productCategoryFilter)
+  ), [productTemplates, searchTerm, productCategoryFilter]);
   
-  const productCategories = Array.from(new Set(products.map(p => p.productCategory)));
+  const productCategories = useMemo(() => Array.from(new Set(productTemplates.map(pt => pt.productCategory))), [productTemplates]);
 
 
   return (
     <div className="space-y-6">
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <div>
-          <h1 className="text-3xl font-headline font-bold">Product Management</h1>
-          <p className="text-muted-foreground">Manage your inventory and product details for wholesale.</p>
+          <h1 className="text-3xl font-headline font-bold">Product Template Management</h1>
+          <p className="text-muted-foreground">Manage your product definitions. Batches are managed separately.</p>
         </div>
-        <Button onClick={handleAddProduct} className="bg-accent hover:bg-accent/90 text-accent-foreground">
+        <Button onClick={handleAddProductTemplate} className="bg-accent hover:bg-accent/90 text-accent-foreground">
           <PlusCircle className="mr-2 h-5 w-5" />
-          Add New Product
+          Add New Product Template
         </Button>
       </div>
       
       <div className="flex flex-col md:flex-row gap-4 mb-4 p-4 border rounded-lg bg-card">
         <Input
           type="text"
-          placeholder="Search products by name..."
+          placeholder="Search product templates by name..."
           className="flex-grow p-2 border rounded-md bg-input text-foreground placeholder:text-muted-foreground focus:ring-ring focus:ring-2"
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
@@ -101,15 +110,17 @@ export default function ProductsPage() {
       </div>
 
       <ProductTable
-        products={filteredProducts}
-        onEdit={handleEditProduct}
-        onDelete={handleDeleteProduct}
+        productTemplates={filteredProductTemplates}
+        productBatches={productBatches} // Pass batches for aggregate calculations
+        onEdit={handleEditProductTemplate}
+        onDelete={handleDeleteProductTemplate}
+        // onManageBatches={handleManageBatches}
       />
       <ProductDialog
         isOpen={isDialogOpen}
         onClose={() => setIsDialogOpen(false)}
-        onSave={handleSaveProduct}
-        product={editingProduct}
+        onSave={handleSaveProductTemplate}
+        product={editingProductTemplate}
       />
     </div>
   );

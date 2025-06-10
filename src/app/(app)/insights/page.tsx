@@ -11,8 +11,8 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Lightbulb, Loader2, AlertTriangle, HelpCircle } from 'lucide-react';
 import { generateSalesInsights, type GenerateSalesInsightsOutput } from '@/ai/flows/generate-sales-insights';
-import { mockProducts, mockWholesaleOrders, mockDispensaries } from '@/lib/mock-data';
-import type { WholesaleDataForAI } from '@/lib/types';
+import { mockProductTemplates, mockProductBatches, mockWholesaleOrders, mockDispensaries } from '@/lib/mock-data';
+import type { WholesaleDataForAI, ProductTemplateForAI, ProductBatchForAI, WholesaleOrderForAI, Dispensary } from '@/lib/types';
 import { useToast } from '@/hooks/use-toast';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
@@ -24,11 +24,33 @@ export default function AiInsightsPage() {
   const [error, setError] = useState<string | null>(null);
   const { toast } = useToast();
 
+  // Prepare data for AI, transforming mock data into AI-specific types
   const exampleWholesaleData: WholesaleDataForAI = {
-    products: mockProducts.map(({ id, productName, productCategory, strainType, thcPercentage, cbdPercentage, wholesalePricePerUnit, currentStockQuantity }) => ({ id, productName, productCategory, strainType, thcPercentage, cbdPercentage, wholesalePricePerUnit, currentStockQuantity })),
-    wholesaleOrders: mockWholesaleOrders.map(({ id, dispensaryId, productsOrdered, totalOrderAmount, orderDate, salesAssociateId, paymentStatus, metrcManifestId }) => ({ id, dispensaryId, productsOrdered, totalOrderAmount, orderDate, salesAssociateId, paymentStatus, metrcManifestId })),
+    productTemplates: mockProductTemplates.map(({ id, productName, productCategory, strainType }) => ({ id, productName, productCategory, strainType })),
+    productBatches: mockProductBatches.map(({ id, productTemplateId, metrcPackageId, thcPercentage, cbdPercentage, wholesalePricePerUnit, currentStockQuantity }) => ({ id, productTemplateId, metrcPackageId, thcPercentage, cbdPercentage, wholesalePricePerUnit, currentStockQuantity })),
+    wholesaleOrders: mockWholesaleOrders.map(order => ({
+      id: order.id,
+      dispensaryId: order.dispensaryId,
+      productsOrdered: order.productsOrdered.map(po => ({
+        productTemplateId: po.productTemplateId,
+        productBatchId: po.productBatchId,
+        productName: po.productName,
+        batchMetrcPackageId: po.batchMetrcPackageId,
+        quantity: po.quantity,
+        wholesalePricePerUnit: po.wholesalePricePerUnit,
+        subtotal: po.subtotal,
+        thcPercentageAtSale: po.thcPercentageAtSale,
+        cbdPercentageAtSale: po.cbdPercentageAtSale,
+      })),
+      totalOrderAmount: order.totalOrderAmount,
+      orderDate: order.orderDate,
+      salesAssociateId: order.salesAssociateId,
+      paymentStatus: order.paymentStatus,
+      metrcManifestId: order.metrcManifestId,
+    })),
     dispensaries: mockDispensaries.map(({ id, dispensaryName, licenseNumber, address }) => ({ id, dispensaryName, licenseNumber, address })),
   };
+
   const [wholesaleDataInput, setWholesaleDataInput] = useState(JSON.stringify(exampleWholesaleData, null, 2));
   const [analysisFocus, setAnalysisFocus] = useState('');
 
@@ -55,9 +77,8 @@ export default function AiInsightsPage() {
          throw new SyntaxError("Invalid JSON format in wholesale data. Please check your input.");
       }
       
-      // Basic validation (more thorough schema validation happens in the Genkit flow)
-      if (!parsedData.products || !parsedData.wholesaleOrders || !parsedData.dispensaries) {
-        throw new Error("Missing one or more required data fields (products, wholesaleOrders, dispensaries).");
+      if (!parsedData.productTemplates || !parsedData.productBatches || !parsedData.wholesaleOrders || !parsedData.dispensaries) {
+        throw new Error("Missing one or more required data fields (productTemplates, productBatches, wholesaleOrders, dispensaries).");
       }
 
       const inputForAI: WholesaleDataForAI & { analysisFocus?: string } = {
@@ -99,7 +120,7 @@ export default function AiInsightsPage() {
         <CardHeader>
           <CardTitle>Wholesale Data Input</CardTitle>
           <CardDescription>
-            Paste your wholesale data in JSON format. The data should ideally include product details, wholesale orders, and dispensary information.
+            Paste your wholesale data in JSON format. This should include product templates, specific product batches, wholesale orders, and dispensary information.
             An example structure (based on current mock data) is pre-filled.
           </CardDescription>
         </CardHeader>
@@ -118,7 +139,7 @@ export default function AiInsightsPage() {
                 <Tooltip>
                   <TooltipTrigger asChild><HelpCircle className="h-4 w-4 text-muted-foreground cursor-help" /></TooltipTrigger>
                   <TooltipContent className="w-64">
-                    <p>Guide the AI by specifying areas of interest, e.g., "Identify underperforming products" or "Suggest new markets based on dispensary locations".</p>
+                    <p>Guide the AI by specifying areas of interest, e.g., "Identify underperforming product templates" or "Which METRC batches are selling fastest?".</p>
                   </TooltipContent>
                 </Tooltip>
               </TooltipProvider>

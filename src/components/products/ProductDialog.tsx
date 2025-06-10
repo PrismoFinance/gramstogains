@@ -20,56 +20,47 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Switch } from '@/components/ui/switch';
-import type { Product } from '@/lib/types';
+import type { ProductTemplate } from '@/lib/types'; // Changed from Product to ProductTemplate
 import { useToast } from '@/hooks/use-toast';
 
-const productSchema = z.object({
+// Schema for ProductTemplate
+const productTemplateSchema = z.object({
   productName: z.string().min(1, 'Product name is required'),
   strainType: z.enum(['Indica', 'Sativa', 'Hybrid', 'CBD', 'Other']),
-  thcPercentage: z.number().min(0, 'THC % must be non-negative').max(100, 'THC % cannot exceed 100'),
-  cbdPercentage: z.number().min(0, 'CBD % must be non-negative').max(100, 'CBD % cannot exceed 100'),
   productCategory: z.enum(['Flower', 'Concentrates', 'Edibles', 'Vapes', 'Topicals', 'Pre-Rolls', 'Other']),
   unitOfMeasure: z.enum(['Grams', 'Ounces', 'Each', 'Milligrams', 'Other']),
-  wholesalePricePerUnit: z.number().min(0.01, 'Price must be greater than 0'),
-  currentStockQuantity: z.number().min(0, 'Stock cannot be negative').int('Stock must be a whole number'),
   supplier: z.string().min(1, "Supplier name is required"),
   description: z.string().optional(),
   imageUrl: z.string().url('Must be a valid URL').optional().or(z.literal('')),
   activeStatus: z.boolean(),
-  metrcPackageId: z.string().optional().or(z.literal('')), // Added METRC Package ID
 });
 
-type ProductFormValues = z.infer<typeof productSchema>;
+type ProductTemplateFormValues = z.infer<typeof productTemplateSchema>;
 
 interface ProductDialogProps {
   isOpen: boolean;
   onClose: () => void;
-  onSave: (product: Product) => void;
-  product: Product | null;
+  onSave: (productTemplate: ProductTemplate) => void;
+  product: ProductTemplate | null; // Changed from Product to ProductTemplate
 }
 
-const strainTypes: Product['strainType'][] = ['Indica', 'Sativa', 'Hybrid', 'CBD', 'Other'];
-const productCategories: Product['productCategory'][] = ['Flower', 'Concentrates', 'Edibles', 'Vapes', 'Topicals', 'Pre-Rolls', 'Other'];
-const unitsOfMeasure: Product['unitOfMeasure'][] = ['Grams', 'Ounces', 'Each', 'Milligrams', 'Other'];
+const strainTypes: ProductTemplate['strainType'][] = ['Indica', 'Sativa', 'Hybrid', 'CBD', 'Other'];
+const productCategories: ProductTemplate['productCategory'][] = ['Flower', 'Concentrates', 'Edibles', 'Vapes', 'Topicals', 'Pre-Rolls', 'Other'];
+const unitsOfMeasure: ProductTemplate['unitOfMeasure'][] = ['Grams', 'Ounces', 'Each', 'Milligrams', 'Other'];
 
 export function ProductDialog({ isOpen, onClose, onSave, product }: ProductDialogProps) {
   const { toast } = useToast();
-  const { control, register, handleSubmit, reset, formState: { errors, isSubmitting } } = useForm<ProductFormValues>({
-    resolver: zodResolver(productSchema),
+  const { control, register, handleSubmit, reset, formState: { errors, isSubmitting } } = useForm<ProductTemplateFormValues>({
+    resolver: zodResolver(productTemplateSchema),
     defaultValues: {
       productName: '',
       strainType: 'Other',
-      thcPercentage: 0,
-      cbdPercentage: 0,
       productCategory: 'Other',
       unitOfMeasure: 'Each',
-      wholesalePricePerUnit: 0,
-      currentStockQuantity: 0,
       supplier: '',
       description: '',
       imageUrl: '',
       activeStatus: true,
-      metrcPackageId: '',
     }
   });
 
@@ -79,50 +70,35 @@ export function ProductDialog({ isOpen, onClose, onSave, product }: ProductDialo
         reset({
           productName: product.productName,
           strainType: product.strainType,
-          thcPercentage: product.thcPercentage,
-          cbdPercentage: product.cbdPercentage,
           productCategory: product.productCategory,
           unitOfMeasure: product.unitOfMeasure,
-          wholesalePricePerUnit: product.wholesalePricePerUnit,
-          currentStockQuantity: product.currentStockQuantity,
           supplier: product.supplier,
           description: product.description || '',
           imageUrl: product.imageUrl || '',
           activeStatus: product.activeStatus,
-          metrcPackageId: product.metrcPackageId || '',
         });
       } else {
         reset({ 
           productName: '',
           strainType: 'Other',
-          thcPercentage: 0,
-          cbdPercentage: 0,
           productCategory: 'Other',
           unitOfMeasure: 'Each',
-          wholesalePricePerUnit: 0,
-          currentStockQuantity: 0,
           supplier: '',
           description: '',
           imageUrl: '',
           activeStatus: true,
-          metrcPackageId: '',
         });
       }
     }
   }, [product, isOpen, reset]);
 
-  const onSubmit = (data: ProductFormValues) => {
-    const productToSave: Product = {
+  const onSubmit = (data: ProductTemplateFormValues) => {
+    const productTemplateToSave: ProductTemplate = {
       ...data,
-      id: product?.id || `prod${Date.now()}`, 
-      wholesalePricePerUnit: Number(data.wholesalePricePerUnit),
-      currentStockQuantity: Number(data.currentStockQuantity),
-      thcPercentage: Number(data.thcPercentage),
-      cbdPercentage: Number(data.cbdPercentage),
-      metrcPackageId: data.metrcPackageId || undefined,
+      id: product?.id || `pt${Date.now()}`, 
     };
-    onSave(productToSave);
-    toast({ title: product ? 'Product Updated' : 'Product Added', description: `${data.productName} has been saved successfully.` });
+    onSave(productTemplateToSave);
+    toast({ title: product ? 'Product Template Updated' : 'Product Template Added', description: `${data.productName} has been saved successfully.` });
     onClose();
   };
 
@@ -130,9 +106,9 @@ export function ProductDialog({ isOpen, onClose, onSave, product }: ProductDialo
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
       <DialogContent className="sm:max-w-[625px] bg-card max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle className="font-headline">{product ? 'Edit Product' : 'Add New Product'}</DialogTitle>
+          <DialogTitle className="font-headline">{product ? 'Edit Product Template' : 'Add New Product Template'}</DialogTitle>
           <DialogDescription>
-            {product ? 'Update the details of this product.' : 'Fill in the details for the new product.'}
+            {product ? 'Update the details of this product template.' : 'Fill in the details for the new product template.'}
           </DialogDescription>
         </DialogHeader>
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4 py-4">
@@ -185,62 +161,31 @@ export function ProductDialog({ isOpen, onClose, onSave, product }: ProductDialo
             </div>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <Label htmlFor="thcPercentage">THC %</Label>
-              <Input id="thcPercentage" type="number" step="0.1" {...register('thcPercentage', { valueAsNumber: true })} className={errors.thcPercentage ? 'border-destructive' : ''} />
-              {errors.thcPercentage && <p className="text-sm text-destructive mt-1">{errors.thcPercentage.message}</p>}
-            </div>
-            <div>
-              <Label htmlFor="cbdPercentage">CBD %</Label>
-              <Input id="cbdPercentage" type="number" step="0.1" {...register('cbdPercentage', { valueAsNumber: true })} className={errors.cbdPercentage ? 'border-destructive' : ''} />
-              {errors.cbdPercentage && <p className="text-sm text-destructive mt-1">{errors.cbdPercentage.message}</p>}
-            </div>
+          <div>
+            <Label htmlFor="unitOfMeasure">Unit of Measure</Label>
+            <Controller
+                name="unitOfMeasure"
+                control={control}
+                render={({ field }) => (
+                    <Select onValueChange={field.onChange} value={field.value}>
+                        <SelectTrigger id="unitOfMeasure" className={errors.unitOfMeasure ? 'border-destructive' : ''}>
+                            <SelectValue placeholder="Select unit" />
+                        </SelectTrigger>
+                        <SelectContent>
+                            {unitsOfMeasure.map((unit) => (
+                                <SelectItem key={unit} value={unit}>{unit}</SelectItem>
+                            ))}
+                        </SelectContent>
+                    </Select>
+                )}
+            />
+            {errors.unitOfMeasure && <p className="text-sm text-destructive mt-1">{errors.unitOfMeasure.message}</p>}
           </div>
-          
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <Label htmlFor="wholesalePricePerUnit">Wholesale Price Per Unit</Label>
-              <Input id="wholesalePricePerUnit" type="number" step="0.01" {...register('wholesalePricePerUnit', { valueAsNumber: true })} className={errors.wholesalePricePerUnit ? 'border-destructive' : ''} />
-              {errors.wholesalePricePerUnit && <p className="text-sm text-destructive mt-1">{errors.wholesalePricePerUnit.message}</p>}
-            </div>
-            <div>
-              <Label htmlFor="unitOfMeasure">Unit of Measure</Label>
-              <Controller
-                  name="unitOfMeasure"
-                  control={control}
-                  render={({ field }) => (
-                      <Select onValueChange={field.onChange} value={field.value}>
-                          <SelectTrigger id="unitOfMeasure" className={errors.unitOfMeasure ? 'border-destructive' : ''}>
-                              <SelectValue placeholder="Select unit" />
-                          </SelectTrigger>
-                          <SelectContent>
-                              {unitsOfMeasure.map((unit) => (
-                                  <SelectItem key={unit} value={unit}>{unit}</SelectItem>
-                              ))}
-                          </SelectContent>
-                      </Select>
-                  )}
-              />
-              {errors.unitOfMeasure && <p className="text-sm text-destructive mt-1">{errors.unitOfMeasure.message}</p>}
-            </div>
-          </div>
-           <div>
-              <Label htmlFor="currentStockQuantity">Current Stock Quantity</Label>
-              <Input id="currentStockQuantity" type="number" {...register('currentStockQuantity', { valueAsNumber: true })} className={errors.currentStockQuantity ? 'border-destructive' : ''} />
-              {errors.currentStockQuantity && <p className="text-sm text-destructive mt-1">{errors.currentStockQuantity.message}</p>}
-            </div>
           
           <div>
             <Label htmlFor="supplier">Supplier</Label>
             <Input id="supplier" {...register('supplier')} className={errors.supplier ? 'border-destructive' : ''} />
             {errors.supplier && <p className="text-sm text-destructive mt-1">{errors.supplier.message}</p>}
-          </div>
-
-          <div>
-            <Label htmlFor="metrcPackageId">METRC Package ID (Optional)</Label>
-            <Input id="metrcPackageId" {...register('metrcPackageId')} className={errors.metrcPackageId ? 'border-destructive' : ''} placeholder="e.g. PKG00012345X"/>
-            {errors.metrcPackageId && <p className="text-sm text-destructive mt-1">{errors.metrcPackageId.message}</p>}
           </div>
 
           <div>
@@ -266,17 +211,16 @@ export function ProductDialog({ isOpen, onClose, onSave, product }: ProductDialo
                 />
               )}
             />
-            <Label htmlFor="activeStatus">Active Product</Label>
+            <Label htmlFor="activeStatus">Active Product Template</Label>
           </div>
           {errors.activeStatus && <p className="text-sm text-destructive mt-1">{errors.activeStatus.message}</p>}
-
 
           <DialogFooter>
             <DialogClose asChild>
               <Button type="button" variant="outline">Cancel</Button>
             </DialogClose>
             <Button type="submit" disabled={isSubmitting} className="bg-accent hover:bg-accent/90 text-accent-foreground">
-              {isSubmitting ? 'Saving...' : (product ? 'Save Changes' : 'Add Product')}
+              {isSubmitting ? 'Saving...' : (product ? 'Save Changes' : 'Add Product Template')}
             </Button>
           </DialogFooter>
         </form>

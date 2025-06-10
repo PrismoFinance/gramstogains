@@ -1,5 +1,5 @@
 
-import type { User, Product, WholesaleOrder, Dispensary } from './types';
+import type { User, ProductTemplate, ProductBatch, WholesaleOrder, Dispensary } from './types';
 
 export const mockUsers: User[] = [
   { id: 'admin001', username: 'admin', role: 'administrator' },
@@ -28,88 +28,109 @@ export const mockDispensaries: Dispensary[] = [
   },
 ];
 
-export const mockProducts: Product[] = [
+export const mockProductTemplates: ProductTemplate[] = [
   { 
-    id: 'prod001', 
+    id: 'pt001', 
     productName: 'Green Crack Flower', 
     strainType: 'Sativa', 
-    thcPercentage: 22.5, 
-    cbdPercentage: 0.5,
     productCategory: 'Flower', 
     unitOfMeasure: 'Grams', 
-    wholesalePricePerUnit: 8, 
-    currentStockQuantity: 5000, // in grams
     supplier: 'CannaGrow Farms', 
     description: 'Potent Sativa strain, energizing effects. Bulk flower.', 
     imageUrl: 'https://placehold.co/300x200.png?text=Green+Crack',
     activeStatus: true,
-    metrcPackageId: 'PKG00012345A'
   },
   { 
-    id: 'prod002', 
-    productName: 'OG Kush Pre-Rolls (1g)', 
+    id: 'pt002', 
+    productName: 'OG Kush Pre-Rolls', // Name changed to be more generic for template
     strainType: 'Indica', 
-    thcPercentage: 18.0, 
-    cbdPercentage: 1.0,
     productCategory: 'Pre-Rolls', 
     unitOfMeasure: 'Each', 
-    wholesalePricePerUnit: 4, 
-    currentStockQuantity: 1000, // number of pre-rolls
     supplier: 'RollRight Inc.', 
-    description: 'Classic Indica-dominant hybrid, 1 gram pre-rolls.', 
+    description: 'Classic Indica-dominant hybrid pre-rolls.', 
     imageUrl: 'https://placehold.co/300x200.png?text=OG+Kush+PR',
     activeStatus: true,
-    metrcPackageId: 'PKG00012345B'
   },
   { 
-    id: 'prod003', 
-    productName: 'CBD Gummies (10mg)', 
+    id: 'pt003', 
+    productName: 'CBD Gummies', // Name changed
     strainType: 'CBD', 
-    thcPercentage: 0.2, 
-    cbdPercentage: 10.0,
     productCategory: 'Edibles', 
     unitOfMeasure: 'Each', 
-    wholesalePricePerUnit: 1.5, 
-    currentStockQuantity: 2000, // number of gummies
     supplier: 'SweetRelief Edibles', 
-    description: 'Relaxing CBD-infused gummies, 10mg CBD per gummy.', 
+    description: 'Relaxing CBD-infused gummies.', 
     imageUrl: 'https://placehold.co/300x200.png?text=CBD+Gummies',
     activeStatus: true,
-    metrcPackageId: 'PKG00012345C'
   },
   { 
-    id: 'prod004', 
-    productName: 'Full Spectrum Vape Cartridge (0.5g)', 
+    id: 'pt004', 
+    productName: 'Full Spectrum Vape Cartridge', // Name changed
     strainType: 'Hybrid', 
-    thcPercentage: 75.0, 
-    cbdPercentage: 5.0,
     productCategory: 'Vapes', 
     unitOfMeasure: 'Each', 
-    wholesalePricePerUnit: 15, 
-    currentStockQuantity: 300, // number of cartridges
     supplier: 'VapePure Extracts', 
-    description: 'High potency full spectrum 0.5g vape cartridge.', 
+    description: 'High potency full spectrum vape cartridges.', 
     imageUrl: 'https://placehold.co/300x200.png?text=Vape+Cart',
     activeStatus: true,
-    metrcPackageId: 'PKG00012345D'
   },
   { 
-    id: 'prod005', 
-    productName: 'Blue Dream Concentrate (1g)', 
+    id: 'pt005', 
+    productName: 'Blue Dream Concentrate', 
     strainType: 'Sativa', 
-    thcPercentage: 85.2, 
-    cbdPercentage: 0.8,
     productCategory: 'Concentrates', 
     unitOfMeasure: 'Grams', 
-    wholesalePricePerUnit: 25, 
-    currentStockQuantity: 250, // in grams
     supplier: 'CannaGrow Farms', 
     description: 'High-quality Blue Dream concentrate, sativa-dominant effects.', 
     imageUrl: 'https://placehold.co/300x200.png?text=BD+Concentrate',
-    activeStatus: false, // Example of inactive product
-    metrcPackageId: 'PKG00012345E'
+    activeStatus: false, 
   },
 ];
+
+export const mockProductBatches: ProductBatch[] = [
+  // Batches for Green Crack Flower (pt001)
+  { 
+    id: 'batch001', productTemplateId: 'pt001', metrcPackageId: 'PKGCRACKA001', 
+    thcPercentage: 22.5, cbdPercentage: 0.5, wholesalePricePerUnit: 8, 
+    currentStockQuantity: 3000, unitOfMeasure: 'Grams', activeStatus: true,
+    productionDate: new Date(Date.now() - 86400000 * 30).toISOString(), // 30 days ago
+  },
+  { 
+    id: 'batch002', productTemplateId: 'pt001', metrcPackageId: 'PKGCRACKA002', 
+    thcPercentage: 23.1, cbdPercentage: 0.4, wholesalePricePerUnit: 8.10, 
+    currentStockQuantity: 2000, unitOfMeasure: 'Grams', activeStatus: true,
+    productionDate: new Date(Date.now() - 86400000 * 15).toISOString(), // 15 days ago
+  },
+  // Batches for OG Kush Pre-Rolls (pt002)
+  { 
+    id: 'batch003', productTemplateId: 'pt002', metrcPackageId: 'PKGOGPRB001', 
+    thcPercentage: 18.0, cbdPercentage: 1.0, wholesalePricePerUnit: 4, 
+    currentStockQuantity: 1000, unitOfMeasure: 'Each', activeStatus: true,
+  },
+  // Batches for CBD Gummies (pt003)
+  { 
+    id: 'batch004', productTemplateId: 'pt003', metrcPackageId: 'PKGCBDGUMC001', 
+    thcPercentage: 0.2, cbdPercentage: 10.0, wholesalePricePerUnit: 1.5, 
+    currentStockQuantity: 2000, unitOfMeasure: 'Each', activeStatus: true,
+  },
+  // Batches for Vape Cartridge (pt004)
+  { 
+    id: 'batch005', productTemplateId: 'pt004', metrcPackageId: 'PKGVAPED001', 
+    thcPercentage: 75.0, cbdPercentage: 5.0, wholesalePricePerUnit: 15, 
+    currentStockQuantity: 150, unitOfMeasure: 'Each', activeStatus: true,
+  },
+  { 
+    id: 'batch006', productTemplateId: 'pt004', metrcPackageId: 'PKGVAPED002', 
+    thcPercentage: 72.8, cbdPercentage: 5.5, wholesalePricePerUnit: 14.50, 
+    currentStockQuantity: 150, unitOfMeasure: 'Each', activeStatus: true,
+  },
+  // Batch for inactive Blue Dream (pt005)
+  {
+    id: 'batch007', productTemplateId: 'pt005', metrcPackageId: 'PKGBLUEDRE001',
+    thcPercentage: 85.2, cbdPercentage: 0.8, wholesalePricePerUnit: 25,
+    currentStockQuantity: 0, unitOfMeasure: 'Grams', activeStatus: false, // Out of stock and template is inactive
+  }
+];
+
 
 export const mockWholesaleOrders: WholesaleOrder[] = [
   { 
@@ -118,8 +139,8 @@ export const mockWholesaleOrders: WholesaleOrder[] = [
     dispensaryId: 'disp001',
     dispensaryName: 'Green Leaf Wellness',
     productsOrdered: [
-      { productId: 'prod001', productName: 'Green Crack Flower', quantity: 500, wholesalePricePerUnit: 8, subtotal: 4000, metrcPackageId: 'PKG00012345A' },
-      { productId: 'prod002', productName: 'OG Kush Pre-Rolls (1g)', quantity: 100, wholesalePricePerUnit: 4, subtotal: 400, metrcPackageId: 'PKG00012345B' }
+      { productTemplateId: 'pt001', productBatchId: 'batch001', productName: 'Green Crack Flower', batchMetrcPackageId: 'PKGCRACKA001', quantity: 500, wholesalePricePerUnit: 8, subtotal: 4000, thcPercentageAtSale: 22.5, cbdPercentageAtSale: 0.5 },
+      { productTemplateId: 'pt002', productBatchId: 'batch003', productName: 'OG Kush Pre-Rolls', batchMetrcPackageId: 'PKGOGPRB001', quantity: 100, wholesalePricePerUnit: 4, subtotal: 400, thcPercentageAtSale: 18.0, cbdPercentageAtSale: 1.0 }
     ],
     totalOrderAmount: 4400, 
     paymentMethod: 'ACH',
@@ -137,7 +158,7 @@ export const mockWholesaleOrders: WholesaleOrder[] = [
     dispensaryId: 'disp002',
     dispensaryName: 'The Higher Ground',
     productsOrdered: [
-      { productId: 'prod003', productName: 'CBD Gummies (10mg)', quantity: 500, wholesalePricePerUnit: 1.5, subtotal: 750, metrcPackageId: 'PKG00012345C' }
+      { productTemplateId: 'pt003', productBatchId: 'batch004', productName: 'CBD Gummies', batchMetrcPackageId: 'PKGCBDGUMC001', quantity: 500, wholesalePricePerUnit: 1.5, subtotal: 750, thcPercentageAtSale: 0.2, cbdPercentageAtSale: 10.0 }
     ],
     totalOrderAmount: 750, 
     paymentMethod: 'Credit Card',
@@ -154,7 +175,7 @@ export const mockWholesaleOrders: WholesaleOrder[] = [
     dispensaryId: 'disp001',
     dispensaryName: 'Green Leaf Wellness',
     productsOrdered: [
-      { productId: 'prod004', productName: 'Full Spectrum Vape Cartridge (0.5g)', quantity: 50, wholesalePricePerUnit: 15, subtotal: 750, metrcPackageId: 'PKG00012345D' }
+      { productTemplateId: 'pt004', productBatchId: 'batch005', productName: 'Full Spectrum Vape Cartridge', batchMetrcPackageId: 'PKGVAPED001', quantity: 50, wholesalePricePerUnit: 15, subtotal: 750, thcPercentageAtSale: 75.0, cbdPercentageAtSale: 5.0 }
     ],
     totalOrderAmount: 750, 
     paymentMethod: 'Check',

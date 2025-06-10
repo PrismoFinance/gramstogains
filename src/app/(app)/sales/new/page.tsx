@@ -1,9 +1,9 @@
 
 'use client';
 
-import { WholesaleOrderForm } from '@/components/sales/SalesTransactionForm'; // Path remains same, component name inside is WholesaleOrderForm
+import { WholesaleOrderForm } from '@/components/sales/SalesTransactionForm';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { mockProducts, mockDispensaries } from '@/lib/mock-data';
+import { mockProductTemplates, mockProductBatches, mockDispensaries } from '@/lib/mock-data'; // Updated imports
 import { useAuth } from '@/contexts/AuthContext';
 
 export default function NewWholesaleOrderPage() {
@@ -22,7 +22,8 @@ export default function NewWholesaleOrderPage() {
         </CardHeader>
         <CardContent>
           <WholesaleOrderForm 
-            products={mockProducts.filter(p => p.activeStatus)} // Only allow active products to be ordered
+            productTemplates={mockProductTemplates.filter(pt => pt.activeStatus)} // Only active templates
+            productBatches={mockProductBatches.filter(pb => pb.activeStatus && pb.currentStockQuantity > 0)} // Only active, in-stock batches
             dispensaries={mockDispensaries} 
             currentUser={user} 
           />
