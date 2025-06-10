@@ -13,13 +13,14 @@ import { useRouter } from 'next/navigation';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
+const ALL_FILTER_VALUE = "_all_";
 
 export default function ProductsPage() {
   const [products, setProducts] = useState<Product[]>(initialMockProducts);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
-  const [productCategoryFilter, setProductCategoryFilter] = useState(''); // Renamed from categoryFilter
+  const [productCategoryFilter, setProductCategoryFilter] = useState(ALL_FILTER_VALUE);
 
   const { user } = useAuth();
   const router = useRouter();
@@ -53,7 +54,6 @@ export default function ProductsPage() {
     if (editingProduct) {
       setProducts(products.map(p => (p.id === product.id ? product : p)));
     } else {
-      // For new products, ensure a unique ID if not already set by dialog (though dialog does set it)
       const newProductWithId = { ...product, id: product.id || `prod${Date.now()}` };
       setProducts([...products, newProductWithId]);
     }
@@ -62,10 +62,9 @@ export default function ProductsPage() {
 
   const filteredProducts = products.filter(product =>
     product.productName.toLowerCase().includes(searchTerm.toLowerCase()) &&
-    (productCategoryFilter === '' || product.productCategory === productCategoryFilter)
+    (productCategoryFilter === ALL_FILTER_VALUE || product.productCategory === productCategoryFilter)
   );
   
-  // Get unique product categories from the current list of products
   const productCategories = Array.from(new Set(products.map(p => p.productCategory)));
 
 
@@ -95,7 +94,7 @@ export default function ProductsPage() {
                 <SelectValue placeholder="All Categories" />
             </SelectTrigger>
             <SelectContent>
-                <SelectItem value="">All Categories</SelectItem>
+                <SelectItem value={ALL_FILTER_VALUE}>All Categories</SelectItem>
                 {productCategories.map(cat => <SelectItem key={cat} value={cat}>{cat}</SelectItem>)}
             </SelectContent>
         </Select>

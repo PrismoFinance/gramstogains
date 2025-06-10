@@ -3,7 +3,7 @@
 
 import React, { useState, useMemo } from 'react';
 import type { WholesaleOrder, Product, Dispensary } from '@/lib/types';
-import { mockWholesaleOrders, mockProducts, mockDispensaries, mockUsers } from '@/lib/mock-data'; // Added mockUsers
+import { mockWholesaleOrders, mockProducts, mockDispensaries, mockUsers } from '@/lib/mock-data';
 import {
   Table,
   TableBody,
@@ -18,22 +18,23 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Download, FilterX, Package } from 'lucide-react';
 import type { DateRange } from 'react-day-picker';
-import { SimpleDateRangePicker } from '@/components/reports/SimpleDateRangePicker'; // Moved to a common component
+import { SimpleDateRangePicker } from '@/components/reports/SimpleDateRangePicker';
 import { Badge } from '@/components/ui/badge';
-import { Popover, PopoverTrigger, PopoverContent } from '@/components/ui/popover'; // Added Popover imports
+import { Popover, PopoverTrigger, PopoverContent } from '@/components/ui/popover';
+
+const ALL_FILTER_VALUE = "_all_";
 
 export default function WholesaleReportsPage() {
   const [ordersData, setOrdersData] = useState<WholesaleOrder[]>(mockWholesaleOrders);
-  // productsData and dispensariesData are needed for filter options and context
   const [productsData] = useState<Product[]>(mockProducts);
   const [dispensariesData] = useState<Dispensary[]>(mockDispensaries);
 
 
   const [searchTerm, setSearchTerm] = useState('');
-  const [dispensaryFilter, setDispensaryFilter] = useState('');
-  const [productFilter, setProductFilter] = useState(''); // Filters if an order CONTAINS this product
-  const [associateFilter, setAssociateFilter] = useState('');
-  const [paymentStatusFilter, setPaymentStatusFilter] = useState('');
+  const [dispensaryFilter, setDispensaryFilter] = useState(ALL_FILTER_VALUE);
+  const [productFilter, setProductFilter] = useState(ALL_FILTER_VALUE);
+  const [associateFilter, setAssociateFilter] = useState(ALL_FILTER_VALUE);
+  const [paymentStatusFilter, setPaymentStatusFilter] = useState(ALL_FILTER_VALUE);
   const [dateRange, setDateRange] = useState<DateRange | undefined>(undefined);
 
   const uniqueProductsForFilter = useMemo(() => Array.from(new Set(productsData.map(p => p.productName))), [productsData]);
@@ -51,10 +52,10 @@ export default function WholesaleReportsPage() {
                             order.salesAssociateName.toLowerCase().includes(searchTerm.toLowerCase()) ||
                             order.productsOrdered.some(p => p.productName.toLowerCase().includes(searchTerm.toLowerCase()));
 
-      const matchesDispensary = dispensaryFilter === '' || order.dispensaryId === dispensaryFilter;
-      const matchesProduct = productFilter === '' || order.productsOrdered.some(p => p.productId === productFilter);
-      const matchesAssociate = associateFilter === '' || order.salesAssociateId === associateFilter; // Assuming salesAssociateId for filtering
-      const matchesPaymentStatus = paymentStatusFilter === '' || order.paymentStatus === paymentStatusFilter;
+      const matchesDispensary = dispensaryFilter === ALL_FILTER_VALUE || order.dispensaryId === dispensaryFilter;
+      const matchesProduct = productFilter === ALL_FILTER_VALUE || order.productsOrdered.some(p => p.productId === productFilter);
+      const matchesAssociate = associateFilter === ALL_FILTER_VALUE || order.salesAssociateId === associateFilter;
+      const matchesPaymentStatus = paymentStatusFilter === ALL_FILTER_VALUE || order.paymentStatus === paymentStatusFilter;
       const matchesDate = !dateRange || (
         (!dateRange.from || orderDate >= dateRange.from) &&
         (!dateRange.to || orderDate <= new Date(dateRange.to.getTime() + 86399999)) // Include full end day
@@ -69,21 +70,20 @@ export default function WholesaleReportsPage() {
 
   const clearFilters = () => {
     setSearchTerm('');
-    setDispensaryFilter('');
-    setProductFilter('');
-    setAssociateFilter('');
-    setPaymentStatusFilter('');
+    setDispensaryFilter(ALL_FILTER_VALUE);
+    setProductFilter(ALL_FILTER_VALUE);
+    setAssociateFilter(ALL_FILTER_VALUE);
+    setPaymentStatusFilter(ALL_FILTER_VALUE);
     setDateRange(undefined);
   };
   
   const exportToCSV = () => {
-    // Header row - more complex due to nested productsOrdered
     let csvContent = "OrderID,OrderDate,DispensaryName,TotalAmount,PaymentMethod,PaymentTerms,PaymentStatus,SalesAssociate,MetrcID,ShipmentDate,ProductsOrdered(ID|Name|Qty|Price|Subtotal)\n";
     
     filteredOrders.forEach(order => {
         const productsString = order.productsOrdered.map(p => 
             `${p.productId}|${p.productName}|${p.quantity}|${p.wholesalePricePerUnit}|${p.subtotal}`
-        ).join(';'); // Semicolon to separate multiple products within the cell
+        ).join(';');
 
         csvContent += `"${order.id}","${new Date(order.orderDate).toLocaleDateString()}","${order.dispensaryName || 'N/A'}","${order.totalOrderAmount.toFixed(2)}","${order.paymentMethod}","${order.paymentTerms}","${order.paymentStatus}","${order.salesAssociateName}","${order.metrcManifestId || ''}","${order.shipmentDate ? new Date(order.shipmentDate).toLocaleDateString() : ''}","${productsString}"\n`;
     });
@@ -130,29 +130,28 @@ export default function WholesaleReportsPage() {
             <Select value={dispensaryFilter} onValueChange={setDispensaryFilter}>
               <SelectTrigger><SelectValue placeholder="Filter by Dispensary" /></SelectTrigger>
               <SelectContent>
-                <SelectItem value="">All Dispensaries</SelectItem>
+                <SelectItem value={ALL_FILTER_VALUE}>All Dispensaries</SelectItem>
                 {dispensariesData.map(d => <SelectItem key={d.id} value={d.id}>{d.dispensaryName}</SelectItem>)}
               </SelectContent>
             </Select>
             <Select value={productFilter} onValueChange={setProductFilter}>
               <SelectTrigger><SelectValue placeholder="Filter by Product in Order" /></SelectTrigger>
               <SelectContent>
-                <SelectItem value="">Any Product</SelectItem>
+                <SelectItem value={ALL_FILTER_VALUE}>Any Product</SelectItem>
                 {productsData.map(p => <SelectItem key={p.id} value={p.id}>{p.productName}</SelectItem>)}
               </SelectContent>
             </Select>
             <Select value={associateFilter} onValueChange={setAssociateFilter}>
               <SelectTrigger><SelectValue placeholder="Filter by Sales Associate" /></SelectTrigger>
               <SelectContent>
-                <SelectItem value="">All Associates</SelectItem>
-                {/* Assuming mockUsers is available or use uniqueAssociates based on current user data model */}
+                <SelectItem value={ALL_FILTER_VALUE}>All Associates</SelectItem>
                 {mockUsers.filter(u => u.role === 'sales_representative' || u.role === 'administrator').map(name => <SelectItem key={name.id} value={name.id}>{name.username}</SelectItem>)}
               </SelectContent>
             </Select>
              <Select value={paymentStatusFilter} onValueChange={setPaymentStatusFilter}>
               <SelectTrigger><SelectValue placeholder="Filter by Payment Status" /></SelectTrigger>
               <SelectContent>
-                <SelectItem value="">All Statuses</SelectItem>
+                <SelectItem value={ALL_FILTER_VALUE}>All Statuses</SelectItem>
                 {paymentStatuses.map(status => <SelectItem key={status} value={status}>{status}</SelectItem>)}
               </SelectContent>
             </Select>
@@ -231,13 +230,3 @@ export default function WholesaleReportsPage() {
     </div>
   );
 }
-
-// Create this new file if it doesn't exist, or update if it does
-// src/components/reports/SimpleDateRangePicker.tsx
-// For now, assume it exists and the path is correct.
-// If it doesn't exist, add it with the content provided in the user's files.
-// The existing SimpleDateRangePicker in sales/reports/page.tsx will be used as is.
-// If it were to be moved to src/components/reports/, the import path would need to change.
-// Given the file listing, it seems it's defined inline in sales/reports/page.tsx.
-// I'll create a separate component file for it.
-
