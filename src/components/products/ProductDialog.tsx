@@ -20,10 +20,9 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Switch } from '@/components/ui/switch';
-import type { ProductTemplate } from '@/lib/types'; // Changed from Product to ProductTemplate
+import type { ProductTemplate } from '@/lib/types';
 import { useToast } from '@/hooks/use-toast';
 
-// Schema for ProductTemplate
 const productTemplateSchema = z.object({
   productName: z.string().min(1, 'Product name is required'),
   strainType: z.enum(['Indica', 'Sativa', 'Hybrid', 'CBD', 'Other']),
@@ -31,7 +30,8 @@ const productTemplateSchema = z.object({
   unitOfMeasure: z.enum(['Grams', 'Ounces', 'Each', 'Milligrams', 'Other']),
   supplier: z.string().min(1, "Supplier name is required"),
   description: z.string().optional(),
-  imageUrl: z.string().url('Must be a valid URL').optional().or(z.literal('')),
+  imageUrl: z.string().url('Must be a valid URL for product image').optional().or(z.literal('')),
+  coaUrl: z.string().url('Must be a valid URL for COA').optional().or(z.literal('')),
   activeStatus: z.boolean(),
 });
 
@@ -41,7 +41,7 @@ interface ProductDialogProps {
   isOpen: boolean;
   onClose: () => void;
   onSave: (productTemplate: ProductTemplate) => void;
-  product: ProductTemplate | null; // Changed from Product to ProductTemplate
+  product: ProductTemplate | null;
 }
 
 const strainTypes: ProductTemplate['strainType'][] = ['Indica', 'Sativa', 'Hybrid', 'CBD', 'Other'];
@@ -60,6 +60,7 @@ export function ProductDialog({ isOpen, onClose, onSave, product }: ProductDialo
       supplier: '',
       description: '',
       imageUrl: '',
+      coaUrl: '',
       activeStatus: true,
     }
   });
@@ -75,6 +76,7 @@ export function ProductDialog({ isOpen, onClose, onSave, product }: ProductDialo
           supplier: product.supplier,
           description: product.description || '',
           imageUrl: product.imageUrl || '',
+          coaUrl: product.coaUrl || '',
           activeStatus: product.activeStatus,
         });
       } else {
@@ -86,6 +88,7 @@ export function ProductDialog({ isOpen, onClose, onSave, product }: ProductDialo
           supplier: '',
           description: '',
           imageUrl: '',
+          coaUrl: '',
           activeStatus: true,
         });
       }
@@ -194,9 +197,15 @@ export function ProductDialog({ isOpen, onClose, onSave, product }: ProductDialo
           </div>
           
           <div>
-            <Label htmlFor="imageUrl">Image URL (Optional, e.g. https://placehold.co/300x200.png)</Label>
+            <Label htmlFor="imageUrl">Product Image URL (Optional)</Label>
             <Input id="imageUrl" {...register('imageUrl')} className={errors.imageUrl ? 'border-destructive' : ''} placeholder="https://your-image-url.com/image.png"/>
             {errors.imageUrl && <p className="text-sm text-destructive mt-1">{errors.imageUrl.message}</p>}
+          </div>
+
+          <div>
+            <Label htmlFor="coaUrl">COA Link (URL, Optional)</Label>
+            <Input id="coaUrl" {...register('coaUrl')} className={errors.coaUrl ? 'border-destructive' : ''} placeholder="https://example.com/coa.pdf"/>
+            {errors.coaUrl && <p className="text-sm text-destructive mt-1">{errors.coaUrl.message}</p>}
           </div>
 
           <div className="flex items-center space-x-2">

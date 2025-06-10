@@ -15,6 +15,7 @@ export interface ProductTemplate {
   supplier: string;
   description?: string;
   imageUrl?: string;
+  coaUrl?: string; // Link to Certificate of Analysis PDF
   activeStatus: boolean; // Is this product template actively being produced/sold?
 }
 
@@ -77,7 +78,7 @@ export interface Dispensary {
 
 // For AI insights - Adjusted to new structures
 // ProductTemplate details for AI
-export interface ProductTemplateForAI extends Pick<ProductTemplate, 'id' | 'productName' | 'productCategory' | 'strainType'> {}
+export interface ProductTemplateForAI extends Pick<ProductTemplate, 'id' | 'productName' | 'productCategory' | 'strainType' | 'coaUrl'> {}
 
 // ProductBatch details for AI
 export interface ProductBatchForAI extends Pick<ProductBatch, 'id' | 'productTemplateId' | 'metrcPackageId' | 'thcPercentage' | 'cbdPercentage' | 'wholesalePricePerUnit' | 'currentStockQuantity'> {}

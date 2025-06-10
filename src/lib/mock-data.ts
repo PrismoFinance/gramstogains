@@ -38,11 +38,12 @@ export const mockProductTemplates: ProductTemplate[] = [
     supplier: 'CannaGrow Farms', 
     description: 'Potent Sativa strain, energizing effects. Bulk flower.', 
     imageUrl: 'https://placehold.co/300x200.png?text=Green+Crack',
+    coaUrl: 'https://example.com/coa/green-crack-flower.pdf',
     activeStatus: true,
   },
   { 
     id: 'pt002', 
-    productName: 'OG Kush Pre-Rolls', // Name changed to be more generic for template
+    productName: 'OG Kush Pre-Rolls', 
     strainType: 'Indica', 
     productCategory: 'Pre-Rolls', 
     unitOfMeasure: 'Each', 
@@ -53,18 +54,19 @@ export const mockProductTemplates: ProductTemplate[] = [
   },
   { 
     id: 'pt003', 
-    productName: 'CBD Gummies', // Name changed
+    productName: 'CBD Gummies', 
     strainType: 'CBD', 
     productCategory: 'Edibles', 
     unitOfMeasure: 'Each', 
     supplier: 'SweetRelief Edibles', 
     description: 'Relaxing CBD-infused gummies.', 
     imageUrl: 'https://placehold.co/300x200.png?text=CBD+Gummies',
+    coaUrl: 'https://example.com/coa/cbd-gummies.pdf',
     activeStatus: true,
   },
   { 
     id: 'pt004', 
-    productName: 'Full Spectrum Vape Cartridge', // Name changed
+    productName: 'Full Spectrum Vape Cartridge', 
     strainType: 'Hybrid', 
     productCategory: 'Vapes', 
     unitOfMeasure: 'Each', 

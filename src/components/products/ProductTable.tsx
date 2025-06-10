@@ -2,6 +2,7 @@
 'use client';
 
 import Image from 'next/image';
+import Link from 'next/link';
 import type { ProductTemplate, ProductBatch } from '@/lib/types';
 import {
   Table,
@@ -13,7 +14,7 @@ import {
 } from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Edit, Trash2, PackageOpen, PackageX, CheckCircle, XCircle, Layers, Settings2 } from 'lucide-react';
+import { Edit, Trash2, PackageOpen, PackageX, CheckCircle, XCircle, Layers, Settings2, FileText } from 'lucide-react';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -61,7 +62,7 @@ export function ProductTable({ productTemplates, productBatches, onEdit, onDelet
           <TableHeader>
             <TableRow>
               <TableHead className="w-[80px]">Image</TableHead>
-              <TableHead>Name</TableHead>
+              <TableHead>Name / COA</TableHead>
               <TableHead>Batches</TableHead>
               <TableHead>Category</TableHead>
               <TableHead>Strain</TableHead>
@@ -96,7 +97,14 @@ export function ProductTable({ productTemplates, productBatches, onEdit, onDelet
                       data-ai-hint="cannabis product"
                     />
                   </TableCell>
-                  <TableCell className="font-medium">{template.productName}</TableCell>
+                  <TableCell>
+                    <div className="font-medium">{template.productName}</div>
+                    {template.coaUrl && (
+                      <Link href={template.coaUrl} target="_blank" rel="noopener noreferrer" className="text-xs text-accent hover:text-accent/80 flex items-center gap-1 mt-1">
+                        <FileText className="h-3 w-3" /> View COA
+                      </Link>
+                    )}
+                  </TableCell>
                   <TableCell>
                     <div className="flex flex-col items-start gap-1">
                         <Badge variant="outline" className="gap-1 text-xs">
