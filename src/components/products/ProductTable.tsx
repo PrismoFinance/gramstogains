@@ -2,7 +2,7 @@
 'use client';
 
 import Image from 'next/image';
-import type { ProductTemplate, ProductBatch } from '@/lib/types'; // Changed Product to ProductTemplate
+import type { ProductTemplate, ProductBatch } from '@/lib/types';
 import {
   Table,
   TableBody,
@@ -13,7 +13,7 @@ import {
 } from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Edit, Trash2, PackageOpen, PackageX, CheckCircle, XCircle, Layers } from 'lucide-react'; // Added Layers for batches
+import { Edit, Trash2, PackageOpen, PackageX, CheckCircle, XCircle, Layers, Settings2 } from 'lucide-react';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -27,27 +27,28 @@ import {
 } from "@/components/ui/alert-dialog";
 
 interface ProductTableProps {
-  productTemplates: ProductTemplate[]; // Changed from products: Product[]
-  productBatches: ProductBatch[]; // Added to calculate aggregates
-  onEdit: (productTemplate: ProductTemplate) => void; // Changed from product: Product
-  onDelete: (productTemplateId: string) => void; // Changed from productId
-  // onManageBatches: (productTemplateId: string) => void; // Placeholder for future batch management
+  productTemplates: ProductTemplate[];
+  productBatches: ProductBatch[];
+  onEdit: (productTemplate: ProductTemplate) => void;
+  onDelete: (productTemplateId: string) => void;
+  onManageBatches: (productTemplate: ProductTemplate) => void;
 }
 
-export function ProductTable({ productTemplates, productBatches, onEdit, onDelete }: ProductTableProps) {
+export function ProductTable({ productTemplates, productBatches, onEdit, onDelete, onManageBatches }: ProductTableProps) {
 
   const getBatchDataForTemplate = (templateId: string) => {
-    const batches = productBatches.filter(b => b.productTemplateId === templateId && b.activeStatus && b.currentStockQuantity > 0);
+    const batchesForTemplate = productBatches.filter(b => b.productTemplateId === templateId);
+    const activeBatches = batchesForTemplate.filter(b => b.activeStatus && b.currentStockQuantity > 0);
     
-    const totalStock = batches.reduce((sum, b) => sum + b.currentStockQuantity, 0);
+    const totalStock = activeBatches.reduce((sum, b) => sum + b.currentStockQuantity, 0);
     
     let avgThc = 0;
     let avgCbd = 0;
-    if (batches.length > 0) {
-      avgThc = batches.reduce((sum, b) => sum + b.thcPercentage, 0) / batches.length;
-      avgCbd = batches.reduce((sum, b) => sum + b.cbdPercentage, 0) / batches.length;
+    if (activeBatches.length > 0) {
+      avgThc = activeBatches.reduce((sum, b) => sum + b.thcPercentage, 0) / activeBatches.length;
+      avgCbd = activeBatches.reduce((sum, b) => sum + b.cbdPercentage, 0) / activeBatches.length;
     }
-    const activeBatchCount = productBatches.filter(b => b.productTemplateId === templateId && b.activeStatus).length;
+    const activeBatchCount = batchesForTemplate.filter(b => b.activeStatus).length;
 
     return { totalStock, avgThc, avgCbd, activeBatchCount };
   };
@@ -61,12 +62,11 @@ export function ProductTable({ productTemplates, productBatches, onEdit, onDelet
             <TableRow>
               <TableHead className="w-[80px]">Image</TableHead>
               <TableHead>Name</TableHead>
-              <TableHead>Batches</TableHead> {/* Was METRC ID, now shows batch info */}
+              <TableHead>Batches</TableHead>
               <TableHead>Category</TableHead>
               <TableHead>Strain</TableHead>
               <TableHead className="text-right">Avg. THC%</TableHead>
               <TableHead className="text-right">Avg. CBD%</TableHead>
-              {/* <TableHead className="text-right">Wholesale Price</TableHead> Removed, price is per batch */}
               <TableHead>Unit</TableHead>
               <TableHead className="text-right">Total Stock</TableHead>
               <TableHead className="text-center">Stock Status</TableHead>
@@ -98,10 +98,19 @@ export function ProductTable({ productTemplates, productBatches, onEdit, onDelet
                   </TableCell>
                   <TableCell className="font-medium">{template.productName}</TableCell>
                   <TableCell>
-                     <Badge variant="outline" className="gap-1">
-                        <Layers className="h-3 w-3"/> {activeBatchCount} Active
-                     </Badge>
-                     {/* Placeholder for manage batches button: <Button size="xs" variant="link" onClick={() => onManageBatches(template.id)}>Manage</Button> */}
+                    <div className="flex flex-col items-start gap-1">
+                        <Badge variant="outline" className="gap-1 text-xs">
+                            <Layers className="h-3 w-3"/> {activeBatchCount} Active Batche(s)
+                        </Badge>
+                        <Button
+                            variant="link"
+                            size="xs"
+                            className="p-0 h-auto text-accent hover:text-accent/80 text-xs flex items-center gap-1"
+                            onClick={() => onManageBatches(template)}
+                        >
+                            <Settings2 className="h-3 w-3"/> Manage Batches
+                        </Button>
+                    </div>
                   </TableCell>
                   <TableCell>
                     <Badge variant="secondary">{template.productCategory}</Badge>
@@ -109,8 +118,8 @@ export function ProductTable({ productTemplates, productBatches, onEdit, onDelet
                   <TableCell>
                     <Badge variant="outline">{template.strainType}</Badge>
                   </TableCell>
-                  <TableCell className="text-right">{avgThc.toFixed(1)}%</TableCell>
-                  <TableCell className="text-right">{avgCbd.toFixed(1)}%</TableCell>
+                  <TableCell className="text-right">{activeBatches.length > 0 ? avgThc.toFixed(1) : 'N/A'}%</TableCell>
+                  <TableCell className="text-right">{activeBatches.length > 0 ? avgCbd.toFixed(1) : 'N/A'}%</TableCell>
                   <TableCell>{template.unitOfMeasure}</TableCell>
                   <TableCell className="text-right">{totalStock}</TableCell>
                   <TableCell className="text-center">
@@ -132,7 +141,7 @@ export function ProductTable({ productTemplates, productBatches, onEdit, onDelet
                     )}
                   </TableCell>
                   <TableCell className="text-right">
-                    <Button variant="ghost" size="icon" onClick={() => onEdit(template)} className="hover:text-accent mr-2">
+                    <Button variant="ghost" size="icon" onClick={() => onEdit(template)} className="hover:text-accent mr-1">
                       <Edit className="h-4 w-4" />
                       <span className="sr-only">Edit Template</span>
                     </Button>
