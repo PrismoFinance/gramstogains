@@ -1,12 +1,12 @@
 import { LoginForm } from '@/components/auth/LoginForm';
-import { Leaf } from 'lucide-react';
+import { Droplet } from 'lucide-react'; // Changed from Leaf to Droplet
 
 export default function LoginPage() {
   return (
     <div className="flex flex-col items-center justify-center min-h-screen p-4 bg-background">
       <div className="w-full max-w-md">
         <div className="text-center mb-8">
-          <Leaf className="mx-auto h-16 w-16 text-primary mb-4" />
+          <Droplet className="mx-auto h-16 w-16 text-accent mb-4" /> {/* Changed from Leaf and text-primary to text-accent */}
           <h1 className="text-4xl font-headline font-bold text-foreground">
             Canna<span className="text-primary">Sale</span>
           </h1>
