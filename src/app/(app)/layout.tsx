@@ -42,7 +42,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
             {children}
           </main>
            <footer className="p-4 text-center text-sm text-muted-foreground border-t border-border">
-            CannaSale &copy; {new Date().getFullYear()}
+            TerpTrack &copy; {new Date().getFullYear()}
           </footer>
         </div>
       </SidebarInset>

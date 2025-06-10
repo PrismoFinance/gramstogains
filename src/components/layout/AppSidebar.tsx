@@ -17,7 +17,7 @@ import {
   ShoppingBag,
   Users, 
   Lightbulb,
-  Droplet, // Changed from Leaf
+  Droplet, 
   Settings,
   FileText,
   PlusCircle,
@@ -51,9 +51,9 @@ export function AppSidebar({ user }: AppSidebarProps) {
     <>
       <SidebarHeader className="border-b border-sidebar-border">
         <Link href="/dashboard" className="flex items-center gap-2 p-2 text-lg font-semibold font-headline">
-          <Droplet className="h-8 w-8 text-accent" /> {/* Changed from Leaf and text-primary to text-accent */}
+          <Droplet className="h-8 w-8 text-accent" /> 
           <span className="text-foreground group-data-[collapsible=icon]:hidden">
-            Canna<span className="text-primary">Sale</span>
+            Terp<span className="text-primary">Track</span>
           </span>
         </Link>
       </SidebarHeader>
