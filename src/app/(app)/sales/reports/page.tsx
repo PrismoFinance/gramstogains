@@ -3,7 +3,7 @@
 
 import React, { useState, useMemo } from 'react';
 import type { WholesaleOrder, Product, Dispensary } from '@/lib/types';
-import { mockWholesaleOrders, mockProducts, mockDispensaries } from '@/lib/mock-data';
+import { mockWholesaleOrders, mockProducts, mockDispensaries, mockUsers } from '@/lib/mock-data'; // Added mockUsers
 import {
   Table,
   TableBody,
@@ -20,6 +20,7 @@ import { Download, FilterX, Package } from 'lucide-react';
 import type { DateRange } from 'react-day-picker';
 import { SimpleDateRangePicker } from '@/components/reports/SimpleDateRangePicker'; // Moved to a common component
 import { Badge } from '@/components/ui/badge';
+import { Popover, PopoverTrigger, PopoverContent } from '@/components/ui/popover'; // Added Popover imports
 
 export default function WholesaleReportsPage() {
   const [ordersData, setOrdersData] = useState<WholesaleOrder[]>(mockWholesaleOrders);
@@ -239,3 +240,4 @@ export default function WholesaleReportsPage() {
 // If it were to be moved to src/components/reports/, the import path would need to change.
 // Given the file listing, it seems it's defined inline in sales/reports/page.tsx.
 // I'll create a separate component file for it.
+
