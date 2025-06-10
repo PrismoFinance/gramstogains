@@ -196,8 +196,10 @@ export function WholesaleOrderForm({ productTemplates, productBatches, dispensar
                                 variant={"outline"}
                                 className={cn( "w-full justify-start text-left font-normal", !field.value && "text-muted-foreground", errors.orderDate ? "border-destructive" : "" )}
                             >
+                              <span className="flex items-center w-full">
                                 <CalendarIcon className="mr-2 h-4 w-4" />
                                 {field.value ? format(field.value, "PPP") : <span>Pick a date</span>}
+                              </span>
                             </Button>
                         </PopoverTrigger>
                         <PopoverContent className="w-auto p-0"> <Calendar mode="single" selected={field.value} onSelect={field.onChange} initialFocus /> </PopoverContent>
@@ -382,7 +384,29 @@ export function WholesaleOrderForm({ productTemplates, productBatches, dispensar
         </div>
         <div>
             <Label htmlFor="shipmentDate">Shipment Date (Optional)</Label>
-            <Controller name="shipmentDate" control={control} render={({ field }) => ( <Popover> <PopoverTrigger asChild> <Button variant={"outline"} className={cn( "w-full justify-start text-left font-normal", !field.value && "text-muted-foreground", errors.shipmentDate ? "border-destructive" : "" )}> <CalendarIcon className="mr-2 h-4 w-4" /> {field.value ? format(field.value, "PPP") : <span>Pick a date</span>} </Button> </PopoverTrigger> <PopoverContent className="w-auto p-0"> <Calendar mode="single" selected={field.value} onSelect={field.onChange} initialFocus /> </PopoverContent> </Popover> )} />
+            <Controller name="shipmentDate" control={control} render={({ field }) => (
+                <Popover>
+                    <PopoverTrigger asChild>
+                        <Button
+                            variant={"outline"}
+                            className={cn( "w-full justify-start text-left font-normal", !field.value && "text-muted-foreground", errors.shipmentDate ? "border-destructive" : "" )}
+                        >
+                          <span className="flex items-center w-full">
+                            <CalendarIcon className="mr-2 h-4 w-4" />
+                            {field.value ? format(field.value, "PPP") : <span>Pick a date</span>}
+                          </span>
+                        </Button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-auto p-0">
+                        <Calendar
+                            mode="single"
+                            selected={field.value}
+                            onSelect={field.onChange}
+                            initialFocus
+                        />
+                    </PopoverContent>
+                </Popover>
+            )} />
              {errors.shipmentDate && <p className="text-sm text-destructive mt-1">{errors.shipmentDate.message}</p>}
         </div>
       </div>
