@@ -53,7 +53,7 @@ export function AppSidebar({ user }: AppSidebarProps) {
         <Link href="/dashboard" className="flex items-center gap-2 p-2 text-lg font-semibold font-headline">
           <Leaf className="h-8 w-8 text-primary" />
           <span className="text-foreground group-data-[collapsible=icon]:hidden">
-            Canna<span className="text-brand-red">Sale</span>
+            Canna<span className="text-primary">Sale</span>
           </span>
         </Link>
       </SidebarHeader>

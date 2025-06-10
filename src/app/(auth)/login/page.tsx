@@ -8,7 +8,7 @@ export default function LoginPage() {
         <div className="text-center mb-8">
           <Leaf className="mx-auto h-16 w-16 text-primary mb-4" />
           <h1 className="text-4xl font-headline font-bold text-foreground">
-            Canna<span className="text-brand-red">Sale</span>
+            Canna<span className="text-primary">Sale</span>
           </h1>
           <p className="text-muted-foreground mt-2">Sign in to access your account</p>
         </div>
