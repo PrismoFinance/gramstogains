@@ -1,3 +1,4 @@
+
 'use client';
 
 import React, { useEffect } from 'react';
@@ -42,7 +43,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
             {children}
           </main>
            <footer className="p-4 text-center text-sm text-muted-foreground border-t border-border">
-            TerpTrack &copy; {new Date().getFullYear()}
+            Grams &amp; Gains &copy; {new Date().getFullYear()}
           </footer>
         </div>
       </SidebarInset>

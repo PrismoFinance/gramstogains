@@ -4,7 +4,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { AuthProvider } from '@/contexts/AuthContext';
 
 export const metadata: Metadata = {
-  title: 'TerpTrack',
+  title: 'Grams & Gains',
   description: 'Streamlined Sales and Product Management for Cannabis Businesses',
 };
 

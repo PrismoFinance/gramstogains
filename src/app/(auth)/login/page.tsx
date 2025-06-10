@@ -8,14 +8,14 @@ export default function LoginPage() {
         <div className="text-center mb-8">
           <Droplet className="mx-auto h-16 w-16 text-accent mb-4" /> 
           <h1 className="text-4xl font-headline font-bold text-foreground">
-            Terp<span className="text-primary">Track</span>
+            Grams <span className="text-primary">&amp;</span> Gains
           </h1>
           <p className="text-muted-foreground mt-2">Sign in to access your account</p>
         </div>
         <LoginForm />
       </div>
       <footer className="text-center text-muted-foreground text-sm mt-12">
-        &copy; {new Date().getFullYear()} TerpTrack. All rights reserved.
+        &copy; {new Date().getFullYear()} Grams & Gains. All rights reserved.
       </footer>
     </div>
   );
