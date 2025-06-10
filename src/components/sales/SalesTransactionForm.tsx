@@ -15,14 +15,15 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { useToast } from '@/hooks/use-toast';
 import type { Product, User, WholesaleOrder, Dispensary, ProductOrdered } from '@/lib/types';
 import { mockWholesaleOrders } from '@/lib/mock-data'; 
-import { Loader2, PlusCircle, Trash2, CalendarIcon } from 'lucide-react';
+import { Loader2, PlusCircle, Trash2, CalendarIcon, Tag } from 'lucide-react';
 import { format } from "date-fns";
 import { cn } from '@/lib/utils';
+import { Badge } from '@/components/ui/badge';
 
 const productOrderedSchema = z.object({
   productId: z.string().min(1, "Product is required"),
   quantity: z.number().min(1, "Quantity must be at least 1"),
-  // wholesalePricePerUnit and subtotal will be calculated
+  metrcPackageId: z.string().optional(), // Capture from selected product
 });
 
 const wholesaleOrderSchema = z.object({
@@ -54,7 +55,7 @@ export function WholesaleOrderForm({ products, dispensaries, currentUser }: Whol
     defaultValues: {
       dispensaryId: '',
       orderDate: new Date(),
-      productsOrdered: [{ productId: '', quantity: 1 }],
+      productsOrdered: [{ productId: '', quantity: 1, metrcPackageId: '' }],
       paymentMethod: 'ACH',
       paymentTerms: 'Net 30',
       paymentStatus: 'Pending',
@@ -64,7 +65,7 @@ export function WholesaleOrderForm({ products, dispensaries, currentUser }: Whol
     },
   });
 
-  const { fields, append, remove, update } = useFieldArray({
+  const { fields, append, remove } = useFieldArray({ // `update` is not strictly needed here if we use setValue
     control,
     name: "productsOrdered"
   });
@@ -89,7 +90,7 @@ export function WholesaleOrderForm({ products, dispensaries, currentUser }: Whol
 
     const productsOrderedWithDetails: ProductOrdered[] = data.productsOrdered.map(item => {
       const productDetails = products.find(p => p.id === item.productId);
-      if (!productDetails) throw new Error("Invalid product in order."); // Should be caught by validation
+      if (!productDetails) throw new Error("Invalid product in order.");
       if (item.quantity > productDetails.currentStockQuantity) {
         toast({ title: 'Error', description: `Not enough stock for ${productDetails.productName}. Available: ${productDetails.currentStockQuantity}`, variant: 'destructive' });
         throw new Error("Not enough stock");
@@ -100,6 +101,7 @@ export function WholesaleOrderForm({ products, dispensaries, currentUser }: Whol
         quantity: item.quantity,
         wholesalePricePerUnit: productDetails.wholesalePricePerUnit,
         subtotal: productDetails.wholesalePricePerUnit * item.quantity,
+        metrcPackageId: productDetails.metrcPackageId || item.metrcPackageId, // Prioritize product's METRC ID
       };
     }).filter(Boolean) as ProductOrdered[];
 
@@ -108,8 +110,6 @@ export function WholesaleOrderForm({ products, dispensaries, currentUser }: Whol
          return;
     }
 
-
-    // Simulate API call
     await new Promise(resolve => setTimeout(resolve, 1000));
     
     const newWholesaleOrder: WholesaleOrder = {
@@ -139,7 +139,7 @@ export function WholesaleOrderForm({ products, dispensaries, currentUser }: Whol
     });
     
     toast({ title: 'Wholesale Order Created!', description: `Order ${newWholesaleOrder.id} for ${newWholesaleOrder.dispensaryName} totalling $${newWholesaleOrder.totalOrderAmount.toFixed(2)} recorded.` });
-    reset();
+    reset(); // This will reset to defaultValues, including an empty productsOrdered item.
     setTotalOrderAmount(0);
     setIsSubmitting(false);
   };
@@ -209,20 +209,28 @@ export function WholesaleOrderForm({ products, dispensaries, currentUser }: Whol
         {fields.map((item, index) => {
           const selectedProductDetails = products.find(p => p.id === watchedProductsOrdered[index]?.productId);
           return (
-            <div key={item.id} className="flex items-end gap-2 p-3 border rounded-md bg-muted/20">
-              <div className="flex-grow">
+            <div key={item.id} className="flex flex-col sm:flex-row items-end gap-2 p-3 border rounded-md bg-muted/20">
+              <div className="flex-grow w-full sm:w-auto">
                 <Label htmlFor={`productsOrdered.${index}.productId`}>Product</Label>
                  <Controller
                     name={`productsOrdered.${index}.productId`}
                     control={control}
                     render={({ field }) => (
-                        <Select onValueChange={(value) => {
+                        <Select 
+                          onValueChange={(value) => {
                             field.onChange(value);
                             const product = products.find(p => p.id === value);
-                            if (product && watchedProductsOrdered[index]?.quantity > product.currentStockQuantity) {
-                                setValue(`productsOrdered.${index}.quantity`, product.currentStockQuantity);
+                            if (product) {
+                                setValue(`productsOrdered.${index}.metrcPackageId`, product.metrcPackageId || '');
+                                if (watchedProductsOrdered[index]?.quantity > product.currentStockQuantity) {
+                                    setValue(`productsOrdered.${index}.quantity`, product.currentStockQuantity);
+                                }
+                            } else {
+                                setValue(`productsOrdered.${index}.metrcPackageId`, '');
                             }
-                        }} value={field.value}>
+                          }} 
+                          value={field.value}
+                        >
                         <SelectTrigger className={errors.productsOrdered?.[index]?.productId ? 'border-destructive' : ''}>
                             <SelectValue placeholder="Select product" />
                         </SelectTrigger>
@@ -238,7 +246,7 @@ export function WholesaleOrderForm({ products, dispensaries, currentUser }: Whol
                 />
                 {errors.productsOrdered?.[index]?.productId && <p className="text-sm text-destructive mt-1">{errors.productsOrdered?.[index]?.productId?.message}</p>}
               </div>
-              <div className="w-1/4">
+              <div className="w-full sm:w-1/4">
                 <Label htmlFor={`productsOrdered.${index}.quantity`}>Quantity</Label>
                 <Controller
                     name={`productsOrdered.${index}.quantity`}
@@ -262,15 +270,22 @@ export function WholesaleOrderForm({ products, dispensaries, currentUser }: Whol
                     <p className="text-sm text-destructive mt-1">Max stock: {selectedProductDetails.currentStockQuantity}</p>
                 )}
               </div>
-              <div>
-                <Button type="button" variant="ghost" size="icon" onClick={() => remove(index)} className="text-destructive hover:bg-destructive/10">
-                  <Trash2 className="h-4 w-4" />
+              <div className="w-full sm:w-auto mt-2 sm:mt-0">
+                {selectedProductDetails?.metrcPackageId && (
+                    <Badge variant="outline" className="text-xs gap-1 whitespace-nowrap">
+                        <Tag className="h-3 w-3"/> {selectedProductDetails.metrcPackageId}
+                    </Badge>
+                )}
+              </div>
+              <div className="w-full sm:w-auto mt-2 sm:mt-0">
+                <Button type="button" variant="ghost" size="icon" onClick={() => remove(index)} className="text-destructive hover:bg-destructive/10 w-full sm:w-auto">
+                  <Trash2 className="h-4 w-4" /> <span className="sm:hidden ml-2">Remove</span>
                 </Button>
               </div>
             </div>
           );
         })}
-        <Button type="button" variant="outline" size="sm" onClick={() => append({ productId: '', quantity: 1 })}>
+        <Button type="button" variant="outline" size="sm" onClick={() => append({ productId: '', quantity: 1, metrcPackageId: '' })}>
           <PlusCircle className="mr-2 h-4 w-4" /> Add Product
         </Button>
         {errors.productsOrdered && typeof errors.productsOrdered === 'object' && !Array.isArray(errors.productsOrdered) && (
@@ -284,8 +299,8 @@ export function WholesaleOrderForm({ products, dispensaries, currentUser }: Whol
           const product = products.find(p => p.id === item.productId);
           if (!product || item.quantity <= 0) return null;
           return (
-            <div key={index} className="flex justify-between text-sm">
-              <span>{product.productName} (x{item.quantity})</span>
+            <div key={index} className="flex justify-between text-sm items-center">
+              <span>{product.productName} (x{item.quantity}) {item.metrcPackageId && <Badge variant="outline" className="ml-1 text-xs">{item.metrcPackageId}</Badge>}</span>
               <span>${(product.wholesalePricePerUnit * item.quantity).toFixed(2)}</span>
             </div>
           );

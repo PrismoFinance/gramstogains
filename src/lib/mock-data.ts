@@ -42,7 +42,8 @@ export const mockProducts: Product[] = [
     supplier: 'CannaGrow Farms', 
     description: 'Potent Sativa strain, energizing effects. Bulk flower.', 
     imageUrl: 'https://placehold.co/300x200.png?text=Green+Crack',
-    activeStatus: true 
+    activeStatus: true,
+    metrcPackageId: 'PKG00012345A'
   },
   { 
     id: 'prod002', 
@@ -57,7 +58,8 @@ export const mockProducts: Product[] = [
     supplier: 'RollRight Inc.', 
     description: 'Classic Indica-dominant hybrid, 1 gram pre-rolls.', 
     imageUrl: 'https://placehold.co/300x200.png?text=OG+Kush+PR',
-    activeStatus: true
+    activeStatus: true,
+    metrcPackageId: 'PKG00012345B'
   },
   { 
     id: 'prod003', 
@@ -72,7 +74,8 @@ export const mockProducts: Product[] = [
     supplier: 'SweetRelief Edibles', 
     description: 'Relaxing CBD-infused gummies, 10mg CBD per gummy.', 
     imageUrl: 'https://placehold.co/300x200.png?text=CBD+Gummies',
-    activeStatus: true
+    activeStatus: true,
+    metrcPackageId: 'PKG00012345C'
   },
   { 
     id: 'prod004', 
@@ -87,7 +90,8 @@ export const mockProducts: Product[] = [
     supplier: 'VapePure Extracts', 
     description: 'High potency full spectrum 0.5g vape cartridge.', 
     imageUrl: 'https://placehold.co/300x200.png?text=Vape+Cart',
-    activeStatus: true
+    activeStatus: true,
+    metrcPackageId: 'PKG00012345D'
   },
   { 
     id: 'prod005', 
@@ -102,7 +106,8 @@ export const mockProducts: Product[] = [
     supplier: 'CannaGrow Farms', 
     description: 'High-quality Blue Dream concentrate, sativa-dominant effects.', 
     imageUrl: 'https://placehold.co/300x200.png?text=BD+Concentrate',
-    activeStatus: false // Example of inactive product
+    activeStatus: false, // Example of inactive product
+    metrcPackageId: 'PKG00012345E'
   },
 ];
 
@@ -113,8 +118,8 @@ export const mockWholesaleOrders: WholesaleOrder[] = [
     dispensaryId: 'disp001',
     dispensaryName: 'Green Leaf Wellness',
     productsOrdered: [
-      { productId: 'prod001', productName: 'Green Crack Flower', quantity: 500, wholesalePricePerUnit: 8, subtotal: 4000 },
-      { productId: 'prod002', productName: 'OG Kush Pre-Rolls (1g)', quantity: 100, wholesalePricePerUnit: 4, subtotal: 400 }
+      { productId: 'prod001', productName: 'Green Crack Flower', quantity: 500, wholesalePricePerUnit: 8, subtotal: 4000, metrcPackageId: 'PKG00012345A' },
+      { productId: 'prod002', productName: 'OG Kush Pre-Rolls (1g)', quantity: 100, wholesalePricePerUnit: 4, subtotal: 400, metrcPackageId: 'PKG00012345B' }
     ],
     totalOrderAmount: 4400, 
     paymentMethod: 'ACH',
@@ -132,7 +137,7 @@ export const mockWholesaleOrders: WholesaleOrder[] = [
     dispensaryId: 'disp002',
     dispensaryName: 'The Higher Ground',
     productsOrdered: [
-      { productId: 'prod003', productName: 'CBD Gummies (10mg)', quantity: 500, wholesalePricePerUnit: 1.5, subtotal: 750 }
+      { productId: 'prod003', productName: 'CBD Gummies (10mg)', quantity: 500, wholesalePricePerUnit: 1.5, subtotal: 750, metrcPackageId: 'PKG00012345C' }
     ],
     totalOrderAmount: 750, 
     paymentMethod: 'Credit Card',
@@ -149,7 +154,7 @@ export const mockWholesaleOrders: WholesaleOrder[] = [
     dispensaryId: 'disp001',
     dispensaryName: 'Green Leaf Wellness',
     productsOrdered: [
-      { productId: 'prod004', productName: 'Full Spectrum Vape Cartridge (0.5g)', quantity: 50, wholesalePricePerUnit: 15, subtotal: 750 }
+      { productId: 'prod004', productName: 'Full Spectrum Vape Cartridge (0.5g)', quantity: 50, wholesalePricePerUnit: 15, subtotal: 750, metrcPackageId: 'PKG00012345D' }
     ],
     totalOrderAmount: 750, 
     paymentMethod: 'Check',

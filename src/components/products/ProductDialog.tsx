@@ -36,6 +36,7 @@ const productSchema = z.object({
   description: z.string().optional(),
   imageUrl: z.string().url('Must be a valid URL').optional().or(z.literal('')),
   activeStatus: z.boolean(),
+  metrcPackageId: z.string().optional().or(z.literal('')), // Added METRC Package ID
 });
 
 type ProductFormValues = z.infer<typeof productSchema>;
@@ -45,7 +46,6 @@ interface ProductDialogProps {
   onClose: () => void;
   onSave: (product: Product) => void;
   product: Product | null;
-  // categories prop is no longer needed as productCategory is an enum
 }
 
 const strainTypes: Product['strainType'][] = ['Indica', 'Sativa', 'Hybrid', 'CBD', 'Other'];
@@ -69,6 +69,7 @@ export function ProductDialog({ isOpen, onClose, onSave, product }: ProductDialo
       description: '',
       imageUrl: '',
       activeStatus: true,
+      metrcPackageId: '',
     }
   });
 
@@ -88,9 +89,10 @@ export function ProductDialog({ isOpen, onClose, onSave, product }: ProductDialo
           description: product.description || '',
           imageUrl: product.imageUrl || '',
           activeStatus: product.activeStatus,
+          metrcPackageId: product.metrcPackageId || '',
         });
       } else {
-        reset({ // Reset to default values for a new product
+        reset({ 
           productName: '',
           strainType: 'Other',
           thcPercentage: 0,
@@ -103,6 +105,7 @@ export function ProductDialog({ isOpen, onClose, onSave, product }: ProductDialo
           description: '',
           imageUrl: '',
           activeStatus: true,
+          metrcPackageId: '',
         });
       }
     }
@@ -111,11 +114,12 @@ export function ProductDialog({ isOpen, onClose, onSave, product }: ProductDialo
   const onSubmit = (data: ProductFormValues) => {
     const productToSave: Product = {
       ...data,
-      id: product?.id || `prod${Date.now()}`, // Keep existing ID or generate new
+      id: product?.id || `prod${Date.now()}`, 
       wholesalePricePerUnit: Number(data.wholesalePricePerUnit),
       currentStockQuantity: Number(data.currentStockQuantity),
       thcPercentage: Number(data.thcPercentage),
       cbdPercentage: Number(data.cbdPercentage),
+      metrcPackageId: data.metrcPackageId || undefined,
     };
     onSave(productToSave);
     toast({ title: product ? 'Product Updated' : 'Product Added', description: `${data.productName} has been saved successfully.` });
@@ -231,6 +235,12 @@ export function ProductDialog({ isOpen, onClose, onSave, product }: ProductDialo
             <Label htmlFor="supplier">Supplier</Label>
             <Input id="supplier" {...register('supplier')} className={errors.supplier ? 'border-destructive' : ''} />
             {errors.supplier && <p className="text-sm text-destructive mt-1">{errors.supplier.message}</p>}
+          </div>
+
+          <div>
+            <Label htmlFor="metrcPackageId">METRC Package ID (Optional)</Label>
+            <Input id="metrcPackageId" {...register('metrcPackageId')} className={errors.metrcPackageId ? 'border-destructive' : ''} placeholder="e.g. PKG00012345X"/>
+            {errors.metrcPackageId && <p className="text-sm text-destructive mt-1">{errors.metrcPackageId.message}</p>}
           </div>
 
           <div>

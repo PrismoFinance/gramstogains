@@ -13,7 +13,7 @@
 
 import {ai} from '@/ai/genkit';
 import {z} from 'genkit';
-import type { WholesaleDataForAI } from '@/lib/types'; // Using the specific type
+import type { WholesaleDataForAI } from '@/lib/types'; 
 
 // Define Zod schemas for input validation based on WholesaleDataForAI
 const ProductForAISchema = z.object({
@@ -25,6 +25,7 @@ const ProductForAISchema = z.object({
   cbdPercentage: z.number(),
   wholesalePricePerUnit: z.number(),
   currentStockQuantity: z.number(),
+  metrcPackageId: z.string().optional().describe("METRC Package ID for the product batch, if available."),
 });
 
 const ProductOrderedForAISchema = z.object({
@@ -33,6 +34,7 @@ const ProductOrderedForAISchema = z.object({
   quantity: z.number(),
   wholesalePricePerUnit: z.number(),
   subtotal: z.number(),
+  metrcPackageId: z.string().optional().describe("METRC Package ID for the specific item sold, if available."),
 });
 
 const WholesaleOrderForAISchema = z.object({
@@ -43,7 +45,7 @@ const WholesaleOrderForAISchema = z.object({
   orderDate: z.string(), // ISO date string
   salesAssociateId: z.string(),
   paymentStatus: z.string(),
-  metrcManifestId: z.string().optional(),
+  metrcManifestId: z.string().optional().describe("METRC Manifest ID for the entire order/transfer, if available."),
 });
 
 const DispensaryForAISchema = z.object({
@@ -57,10 +59,8 @@ const GenerateSalesInsightsInputSchema = z.object({
   products: z.array(ProductForAISchema).describe("List of products offered by the manufacturing lab."),
   wholesaleOrders: z.array(WholesaleOrderForAISchema).describe("List of wholesale orders placed by dispensaries."),
   dispensaries: z.array(DispensaryForAISchema).describe("List of dispensaries the lab sells to."),
-  // Adding a field for specific questions or focus areas for the AI
   analysisFocus: z.string().optional().describe("Optional: Specific area or question to focus the analysis on (e.g., 'Identify underperforming products', 'Suggest new product categories based on dispensary demand').")
 });
-// No need to export type GenerateSalesInsightsInput separately if it's inferred from WholesaleDataForAI, but explicit schema is better for Genkit
 export type GenerateSalesInsightsInput = z.infer<typeof GenerateSalesInsightsInputSchema>;
 
 
@@ -72,9 +72,6 @@ const GenerateSalesInsightsOutputSchema = z.object({
 export type GenerateSalesInsightsOutput = z.infer<typeof GenerateSalesInsightsOutputSchema>;
 
 export async function generateSalesInsights(input: WholesaleDataForAI & { analysisFocus?: string }): Promise<GenerateSalesInsightsOutput> {
-  // Map WholesaleDataForAI to GenerateSalesInsightsInput if necessary, or ensure compatibility
-  // For this example, we assume WholesaleDataForAI is directly compatible or can be easily transformed.
-  // The Zod schema provides validation.
   const validatedInput: GenerateSalesInsightsInput = {
     products: input.products,
     wholesaleOrders: input.wholesaleOrders,
@@ -85,25 +82,26 @@ export async function generateSalesInsights(input: WholesaleDataForAI & { analys
 }
 
 const prompt = ai.definePrompt({
-  name: 'generateWholesaleInsightsPrompt', // Renamed for clarity
+  name: 'generateWholesaleInsightsPrompt',
   input: {schema: GenerateSalesInsightsInputSchema},
   output: {schema: GenerateSalesInsightsOutputSchema},
   prompt: `You are an AI business analyst for a cannabis manufacturing lab. Your role is to analyze wholesale order data, product inventory, and dispensary information to provide actionable insights.
 
   Data Provided:
-  - Products: Details about each product offered by the lab (name, category, strain, THC/CBD, price, stock).
-  - Wholesale Orders: Records of orders placed by dispensaries, including products ordered, quantities, total amounts, dates, and payment status.
-  - Dispensaries: Information about the dispensaries that are customers of the lab.
+  - Products: Details about each product (name, category, strain, THC/CBD, price, stock, METRC Package ID).
+  - Wholesale Orders: Records of orders placed by dispensaries (products ordered with METRC Package IDs, quantities, total amounts, dates, payment status, METRC Manifest ID).
+  - Dispensaries: Information about the dispensaries that are customers.
 
   Analysis Task:
   Based on the provided data (Products: {{{json products}}}, Wholesale Orders: {{{json wholesaleOrders}}}, Dispensaries: {{{json dispensaries}}}), perform a comprehensive analysis.
+  If METRC Package IDs are present for products or ordered items, consider these for more granular batch-level analysis where relevant (e.g., identifying if specific batches/packages are selling faster or preferred by certain dispensaries).
 
   {{#if analysisFocus}}
   Specifically focus on: {{{analysisFocus}}}
   {{else}}
   Consider the following areas:
   1.  Identify top-selling products and product categories to dispensaries.
-  2.  Analyze purchasing patterns of different dispensaries. Are there regional preferences or dispensary types that favor certain products?
+  2.  Analyze purchasing patterns of different dispensaries. Are there regional preferences or dispensary types that favor certain products or even specific METRC-tracked batches?
   3.  Detect trends in product demand (e.g., rising or falling popularity of certain strains, categories, or THC/CBD profiles).
   4.  Assess inventory levels against sales velocity. Highlight any products with low stock that are in high demand, or high stock with low demand.
   5.  Identify potential gaps in the product portfolio based on dispensary purchasing patterns or market trends.
@@ -119,7 +117,7 @@ const prompt = ai.definePrompt({
   Be concise, data-driven, and focus on providing practical value to the manufacturing lab's management.
   `,
   config: {
-    safetySettings: [ // Example safety settings, adjust as needed for cannabis-related content
+    safetySettings: [ 
       { category: 'HARM_CATEGORY_DANGEROUS_CONTENT', threshold: 'BLOCK_ONLY_HIGH' },
       { category: 'HARM_CATEGORY_HATE_SPEECH', threshold: 'BLOCK_MEDIUM_AND_ABOVE' },
     ],
@@ -128,7 +126,7 @@ const prompt = ai.definePrompt({
 
 const generateSalesInsightsFlow = ai.defineFlow(
   {
-    name: 'generateWholesaleInsightsFlow', // Renamed for clarity
+    name: 'generateWholesaleInsightsFlow',
     inputSchema: GenerateSalesInsightsInputSchema,
     outputSchema: GenerateSalesInsightsOutputSchema,
   },

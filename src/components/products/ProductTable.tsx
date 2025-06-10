@@ -13,7 +13,7 @@ import {
 } from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Edit, Trash2, PackageOpen, PackageX, CheckCircle, XCircle } from 'lucide-react';
+import { Edit, Trash2, PackageOpen, PackageX, CheckCircle, XCircle, Tag } from 'lucide-react';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -41,6 +41,7 @@ export function ProductTable({ products, onEdit, onDelete }: ProductTableProps) 
             <TableRow>
               <TableHead className="w-[80px]">Image</TableHead>
               <TableHead>Name</TableHead>
+              <TableHead>METRC ID</TableHead>
               <TableHead>Category</TableHead>
               <TableHead>Strain</TableHead>
               <TableHead className="text-right">THC%</TableHead>
@@ -56,7 +57,7 @@ export function ProductTable({ products, onEdit, onDelete }: ProductTableProps) 
           <TableBody>
             {products.length === 0 && (
               <TableRow>
-                <TableCell colSpan={12} className="text-center py-10 text-muted-foreground">
+                <TableCell colSpan={13} className="text-center py-10 text-muted-foreground">
                   No products found.
                 </TableCell>
               </TableRow>
@@ -74,6 +75,15 @@ export function ProductTable({ products, onEdit, onDelete }: ProductTableProps) 
                   />
                 </TableCell>
                 <TableCell className="font-medium">{product.productName}</TableCell>
+                <TableCell>
+                    {product.metrcPackageId ? (
+                        <Badge variant="outline" className="gap-1 text-xs">
+                            <Tag className="h-3 w-3"/> {product.metrcPackageId}
+                        </Badge>
+                    ) : (
+                        <span className="text-xs text-muted-foreground">N/A</span>
+                    )}
+                </TableCell>
                 <TableCell>
                   <Badge variant="secondary">{product.productCategory}</Badge>
                 </TableCell>

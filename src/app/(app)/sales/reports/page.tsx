@@ -16,7 +16,7 @@ import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { Download, FilterX, Package } from 'lucide-react';
+import { Download, FilterX, Package, Tag } from 'lucide-react';
 import type { DateRange } from 'react-day-picker';
 import { SimpleDateRangePicker } from '@/components/reports/SimpleDateRangePicker';
 import { Badge } from '@/components/ui/badge';
@@ -50,7 +50,10 @@ export default function WholesaleReportsPage() {
                             order.dispensaryName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
                             order.metrcManifestId?.toLowerCase().includes(searchTerm.toLowerCase()) ||
                             order.salesAssociateName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                            order.productsOrdered.some(p => p.productName.toLowerCase().includes(searchTerm.toLowerCase()));
+                            order.productsOrdered.some(p => 
+                                p.productName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                                p.metrcPackageId?.toLowerCase().includes(searchTerm.toLowerCase())
+                            );
 
       const matchesDispensary = dispensaryFilter === ALL_FILTER_VALUE || order.dispensaryId === dispensaryFilter;
       const matchesProduct = productFilter === ALL_FILTER_VALUE || order.productsOrdered.some(p => p.productId === productFilter);
@@ -78,11 +81,11 @@ export default function WholesaleReportsPage() {
   };
   
   const exportToCSV = () => {
-    let csvContent = "OrderID,OrderDate,DispensaryName,TotalAmount,PaymentMethod,PaymentTerms,PaymentStatus,SalesAssociate,MetrcID,ShipmentDate,ProductsOrdered(ID|Name|Qty|Price|Subtotal)\n";
+    let csvContent = "OrderID,OrderDate,DispensaryName,TotalAmount,PaymentMethod,PaymentTerms,PaymentStatus,SalesAssociate,MetrcManifestID,ShipmentDate,ProductsOrdered(ID|Name|Qty|Price|Subtotal|MetrcPkgID)\n";
     
     filteredOrders.forEach(order => {
         const productsString = order.productsOrdered.map(p => 
-            `${p.productId}|${p.productName}|${p.quantity}|${p.wholesalePricePerUnit}|${p.subtotal}`
+            `${p.productId}|${p.productName}|${p.quantity}|${p.wholesalePricePerUnit}|${p.subtotal}|${p.metrcPackageId || ''}`
         ).join(';');
 
         csvContent += `"${order.id}","${new Date(order.orderDate).toLocaleDateString()}","${order.dispensaryName || 'N/A'}","${order.totalOrderAmount.toFixed(2)}","${order.paymentMethod}","${order.paymentTerms}","${order.paymentStatus}","${order.salesAssociateName}","${order.metrcManifestId || ''}","${order.shipmentDate ? new Date(order.shipmentDate).toLocaleDateString() : ''}","${productsString}"\n`;
@@ -183,7 +186,7 @@ export default function WholesaleReportsPage() {
                     <TableHead>Products</TableHead>
                     <TableHead className="text-right">Total Amount</TableHead>
                     <TableHead>Payment Status</TableHead>
-                    <TableHead>METRC ID</TableHead>
+                    <TableHead>METRC Manifest</TableHead>
                     <TableHead>Sales Associate</TableHead>
                 </TableRow>
                 </TableHeader>
@@ -199,16 +202,21 @@ export default function WholesaleReportsPage() {
                         <TableCell>
                             <Popover>
                                 <PopoverTrigger asChild>
-                                    <Button variant="link" size="sm" className="p-0 h-auto">
-                                        {order.productsOrdered.length} item(s) <Package className="ml-1 h-3 w-3"/>
+                                    <Button variant="link" size="sm" className="p-0 h-auto text-left">
+                                        {order.productsOrdered.length} item(s) <Package className="ml-1 h-3 w-3 inline-block"/>
                                     </Button>
                                 </PopoverTrigger>
-                                <PopoverContent className="w-80">
+                                <PopoverContent className="w-96">
                                     <div className="grid gap-2">
-                                        <p className="text-sm font-medium">Products in Order:</p>
+                                        <p className="text-sm font-medium mb-1">Products in Order:</p>
                                         {order.productsOrdered.map(p => (
-                                            <div key={p.productId} className="text-xs">
-                                                {p.productName} (x{p.quantity}) - ${p.subtotal.toFixed(2)}
+                                            <div key={p.productId} className="text-xs border-b pb-1 mb-1 last:border-b-0 last:pb-0 last:mb-0">
+                                                <div className="font-medium">{p.productName} (x{p.quantity}) - ${p.subtotal.toFixed(2)}</div>
+                                                {p.metrcPackageId && (
+                                                    <div className="text-muted-foreground flex items-center">
+                                                        <Tag className="h-3 w-3 mr-1"/> METRC Pkg: {p.metrcPackageId}
+                                                    </div>
+                                                )}
                                             </div>
                                         ))}
                                     </div>
@@ -217,7 +225,15 @@ export default function WholesaleReportsPage() {
                         </TableCell>
                         <TableCell className="text-right font-semibold">${order.totalOrderAmount.toFixed(2)}</TableCell>
                         <TableCell><Badge variant={order.paymentStatus === 'Paid' ? 'default' : order.paymentStatus === 'Pending' ? 'secondary' : 'destructive'}>{order.paymentStatus}</Badge></TableCell>
-                        <TableCell>{order.metrcManifestId || 'N/A'}</TableCell>
+                        <TableCell>
+                            {order.metrcManifestId ? (
+                                <Badge variant="outline" className="gap-1 text-xs">
+                                    <Tag className="h-3 w-3"/> {order.metrcManifestId}
+                                </Badge>
+                            ) : (
+                                <span className="text-xs text-muted-foreground">N/A</span>
+                            )}
+                        </TableCell>
                         <TableCell>{order.salesAssociateName}</TableCell>
                     </TableRow>
                     ))

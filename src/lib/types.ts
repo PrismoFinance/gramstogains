@@ -19,6 +19,7 @@ export interface Product {
   description?: string;
   imageUrl?: string;
   activeStatus: boolean;
+  metrcPackageId?: string; // New field for METRC Package ID
 }
 
 export interface ProductOrdered {
@@ -27,6 +28,7 @@ export interface ProductOrdered {
   quantity: number;
   wholesalePricePerUnit: number;
   subtotal: number;
+  metrcPackageId?: string; // New field for METRC Package ID of the specific item sold
 }
 
 export interface WholesaleOrder {
@@ -60,7 +62,7 @@ export interface Dispensary {
 
 // For AI insights - Adjusted to new structures
 export interface WholesaleDataForAI {
-  products: Pick<Product, 'id' | 'productName' | 'productCategory' | 'strainType' | 'thcPercentage' | 'cbdPercentage' | 'wholesalePricePerUnit' | 'currentStockQuantity'>[];
+  products: Pick<Product, 'id' | 'productName' | 'productCategory' | 'strainType' | 'thcPercentage' | 'cbdPercentage' | 'wholesalePricePerUnit' | 'currentStockQuantity' | 'metrcPackageId'>[];
   wholesaleOrders: Array<Pick<WholesaleOrder, 'id' | 'dispensaryId' | 'productsOrdered' | 'totalOrderAmount' | 'orderDate' | 'salesAssociateId' | 'paymentStatus' | 'metrcManifestId'>>;
   dispensaries: Pick<Dispensary, 'id' | 'dispensaryName' | 'licenseNumber' | 'address'>[];
 }
