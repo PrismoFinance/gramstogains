@@ -61,23 +61,21 @@ export function AppSidebar({ user }: AppSidebarProps) {
         <SidebarMenu>
           {filteredNavItems.map((item) => (
             <SidebarMenuItem key={item.href}>
-              <Link href={item.href} legacyBehavior passHref>
-                <SidebarMenuButton
-                  asChild
-                  isActive={pathname === item.href || (item.href !== '/dashboard' && pathname.startsWith(item.href))}
-                  tooltip={item.label}
-                  className={cn(
-                    (pathname === item.href || (item.href !== '/dashboard' && pathname.startsWith(item.href)))
-                    ? 'bg-sidebar-primary text-sidebar-primary-foreground hover:bg-sidebar-primary/90'
-                    : 'hover:bg-sidebar-accent hover:text-sidebar-accent-foreground'
-                  )}
-                >
-                  <a>
-                    <item.icon className="h-5 w-5" />
-                    <span className="group-data-[collapsible=icon]:hidden">{item.label}</span>
-                  </a>
-                </SidebarMenuButton>
-              </Link>
+              <SidebarMenuButton
+                asChild
+                isActive={pathname === item.href || (item.href !== '/dashboard' && pathname.startsWith(item.href))}
+                tooltip={item.label}
+                className={cn(
+                  (pathname === item.href || (item.href !== '/dashboard' && pathname.startsWith(item.href)))
+                  ? 'bg-sidebar-primary text-sidebar-primary-foreground hover:bg-sidebar-primary/90'
+                  : 'hover:bg-sidebar-accent hover:text-sidebar-accent-foreground'
+                )}
+              >
+                <Link href={item.href}>
+                  <item.icon className="h-5 w-5" />
+                  <span className="group-data-[collapsible=icon]:hidden">{item.label}</span>
+                </Link>
+              </SidebarMenuButton>
             </SidebarMenuItem>
           ))}
         </SidebarMenu>
