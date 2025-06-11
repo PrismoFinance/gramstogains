@@ -43,7 +43,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
             {children}
           </main>
            <footer className="p-4 text-center text-sm text-muted-foreground border-t border-border">
-            Grams &amp; Gains &copy; {new Date().getFullYear()}
+            Grams to Gains &copy; {new Date().getFullYear()}
           </footer>
         </div>
       </SidebarInset>

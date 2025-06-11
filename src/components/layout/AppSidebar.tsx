@@ -53,7 +53,7 @@ export function AppSidebar({ user }: AppSidebarProps) {
         <Link href="/dashboard" className="flex items-center gap-2 p-2 text-lg font-semibold font-headline">
           <Droplet className="h-8 w-8 text-accent" /> 
           <span className="text-foreground group-data-[collapsible=icon]:hidden">
-            Grams <span className="text-primary">&amp;</span> Gains
+            Grams to Gains
           </span>
         </Link>
       </SidebarHeader>
