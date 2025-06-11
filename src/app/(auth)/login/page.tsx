@@ -9,7 +9,7 @@ export default function LoginPage() {
         <div className="text-center mb-8">
           <Droplet className="mx-auto h-16 w-16 text-accent mb-4" /> 
           <h1 className="text-4xl font-headline font-bold text-foreground">
-            Grams to Gains
+            Grams to <span className="text-primary">Gains</span>
           </h1>
           <p className="text-muted-foreground mt-2">Sign in to access your account</p>
         </div>
@@ -21,3 +21,4 @@ export default function LoginPage() {
     </div>
   );
 }
+
