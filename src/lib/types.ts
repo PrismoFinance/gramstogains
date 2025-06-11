@@ -73,7 +73,9 @@ export interface Dispensary {
   contactEmail?: string;
   contactPhoneNumber?: string;
   address?: string;
+  state: string; // e.g., "CO", "CA" - Added for prospecting
   notes?: string;
+  isExistingClient?: boolean; // Added dynamically during prospecting search
 }
 
 // For AI insights - Adjusted to new structures
@@ -104,5 +106,5 @@ export interface WholesaleDataForAI {
   productTemplates: ProductTemplateForAI[];
   productBatches: ProductBatchForAI[];
   wholesaleOrders: WholesaleOrderForAI[];
-  dispensaries: Pick<Dispensary, 'id' | 'dispensaryName' | 'licenseNumber' | 'address'>[];
+  dispensaries: Pick<Dispensary, 'id' | 'dispensaryName' | 'licenseNumber' | 'address' | 'state'>[];
 }
