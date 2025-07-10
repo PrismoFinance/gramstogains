@@ -54,12 +54,11 @@ export default function LandingPage() {
         {/* Hero Section */}
         <section className="relative h-[60vh] min-h-[400px] flex items-center justify-center text-center text-white bg-gray-800">
           <Image
-            src="https://placehold.co/1920x1080.png"
+            src="/images/landing.jpeg"
             alt="Cannabis cultivation background"
             layout="fill"
             objectFit="cover"
             className="absolute z-0 opacity-40"
-            data-ai-hint="cannabis cultivation background"
           />
           <div className="relative z-10 p-4 max-w-4xl mx-auto">
             <h1 className="text-4xl md:text-6xl font-bold font-headline mb-4 drop-shadow-lg">
