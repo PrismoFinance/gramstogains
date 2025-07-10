@@ -21,11 +21,10 @@ function PublicNavbar() {
               Products <ChevronDown className="h-4 w-4 ml-1" />
             </DropdownMenuTrigger>
             <DropdownMenuContent>
-              <DropdownMenuItem>Flower</DropdownMenuItem>
-              <DropdownMenuItem>Pre-Rolls</DropdownMenuItem>
-              <DropdownMenuItem>Edibles</DropdownMenuItem>
-              <DropdownMenuItem>Vapes</DropdownMenuItem>
-              <DropdownMenuItem>Concentrates</DropdownMenuItem>
+              <DropdownMenuItem>Inventory Management</DropdownMenuItem>
+              <DropdownMenuItem>AI-Powered Analytics</DropdownMenuItem>
+              <DropdownMenuItem>Wholesale Order Entry</DropdownMenuItem>
+              <DropdownMenuItem>Client & Prospecting Tools</DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
           <Link href="#" className="hover:text-primary transition-colors">Pricing</Link>
