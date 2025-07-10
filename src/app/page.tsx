@@ -52,7 +52,7 @@ export default function LandingPage() {
       <PublicNavbar />
       <main className="flex-grow">
         {/* Hero Section */}
-        <section className="relative h-[60vh] min-h-[400px] flex items-center justify-center text-center text-white">
+        <section className="relative h-[60vh] min-h-[400px] flex items-center justify-center text-center">
           <Image
             src="/images/landing.jpeg"
             alt="Cannabis cultivation background"
@@ -87,12 +87,11 @@ export default function LandingPage() {
             <div className="flex flex-col md:flex-row items-center gap-12">
               <div className="w-full md:w-1/2">
                 <Image
-                  src="https://placehold.co/600x400.png"
+                  src="/images/inventory.jpeg"
                   alt="Inventory Management Graphic"
                   width={600}
                   height={400}
                   className="rounded-lg shadow-xl"
-                  data-ai-hint="inventory management"
                 />
               </div>
               <div className="w-full md:w-1/2">
@@ -115,12 +114,11 @@ export default function LandingPage() {
             <div className="flex flex-col md:flex-row-reverse items-center gap-12">
               <div className="w-full md:w-1/2">
                 <Image
-                  src="https://placehold.co/600x400.png"
+                  src="/images/insights.jpeg"
                   alt="Sales Analytics Graphic"
                   width={600}
                   height={400}
                   className="rounded-lg shadow-xl"
-                  data-ai-hint="sales analytics"
                 />
               </div>
               <div className="w-full md:w-1/2">
@@ -143,12 +141,11 @@ export default function LandingPage() {
             <div className="flex flex-col md:flex-row items-center gap-12">
               <div className="w-full md:w-1/2">
                 <Image
-                  src="https://placehold.co/600x400.png"
+                  src="/images/streamline.jpeg"
                   alt="Streamlined Operations Graphic"
                   width={600}
                   height={400}
                   className="rounded-lg shadow-xl"
-                  data-ai-hint="streamlined operations"
                 />
               </div>
               <div className="w-full md:w-1/2">
