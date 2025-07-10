@@ -21,9 +21,10 @@ function PublicNavbar() {
               Products <ChevronDown className="h-4 w-4 ml-1" />
             </DropdownMenuTrigger>
             <DropdownMenuContent>
-              <DropdownMenuItem>Vapes</DropdownMenuItem>
               <DropdownMenuItem>Flower</DropdownMenuItem>
+              <DropdownMenuItem>Pre-Rolls</DropdownMenuItem>
               <DropdownMenuItem>Edibles</DropdownMenuItem>
+              <DropdownMenuItem>Vapes</DropdownMenuItem>
               <DropdownMenuItem>Concentrates</DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
@@ -61,6 +62,7 @@ export default function LandingPage() {
             className="absolute z-0"
             data-ai-hint="cannabis cultivation"
           />
+          <div className="absolute inset-0 bg-black/30 z-0" />
           <div className="relative z-10 p-4 max-w-4xl mx-auto">
             <h1 className="text-4xl md:text-6xl font-bold font-headline mb-4 drop-shadow-lg text-white">
               Precision Software for the Modern Cannabis Manufacturer
@@ -72,7 +74,7 @@ export default function LandingPage() {
               <Button asChild size="lg">
                 <Link href="/dashboard">Get Started</Link>
               </Button>
-              <Button asChild size="lg" variant="outline" className="bg-white/10 backdrop-blur-sm border-white/20 text-white hover:bg-white/20">
+              <Button asChild size="lg" variant="outline" className="bg-white/20 backdrop-blur-sm border-white/30 text-white hover:bg-white/30">
                 <Link href="#">Learn More</Link>
               </Button>
             </div>
@@ -92,6 +94,7 @@ export default function LandingPage() {
                   width={600}
                   height={400}
                   className="rounded-lg shadow-xl"
+                  data-ai-hint="cannabis inventory"
                 />
               </div>
               <div className="w-full md:w-1/2">
@@ -119,6 +122,7 @@ export default function LandingPage() {
                   width={600}
                   height={400}
                   className="rounded-lg shadow-xl"
+                  data-ai-hint="sales analytics"
                 />
               </div>
               <div className="w-full md:w-1/2">
@@ -146,6 +150,7 @@ export default function LandingPage() {
                   width={600}
                   height={400}
                   className="rounded-lg shadow-xl"
+                  data-ai-hint="streamlined operations"
                 />
               </div>
               <div className="w-full md:w-1/2">
