@@ -113,7 +113,7 @@ export default function AiInsightsPage() {
         <div>
           <h1 className="text-3xl font-headline font-bold flex items-center">
             <Lightbulb className="mr-3 h-8 w-8 text-primary" />
-            Conversational Sales Analysis
+            Sales Analytics
           </h1>
           <p className="text-muted-foreground">Ask questions about your sales data to uncover trends and opportunities.</p>
         </div>
@@ -137,14 +137,14 @@ export default function AiInsightsPage() {
                 />
             </div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-             <div>
+             <div className="space-y-2">
                 <Label>Date Range (Optional)</Label>
                 <SimpleDateRangePicker date={dateRange} onDateChange={setDateRange} />
              </div>
-             <div>
+             <div className="space-y-2">
                 <Label>Product Category (Optional)</Label>
                 <Select value={productCategoryFilter} onValueChange={setProductCategoryFilter}>
-                    <SelectTrigger>
+                    <SelectTrigger className="h-9">
                         <SelectValue placeholder="Filter by Category" />
                     </SelectTrigger>
                     <SelectContent>
