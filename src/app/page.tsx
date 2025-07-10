@@ -63,7 +63,7 @@ export default function LandingPage() {
           />
           <div className="relative z-10 p-4 max-w-4xl mx-auto">
             <h1 className="text-4xl md:text-6xl font-bold font-headline mb-4 drop-shadow-lg">
-              From Grams to Gains: Precision Software for the Modern Cannabis Manufacturer
+              Precision Software for the Modern Cannabis Manufacturer
             </h1>
             <p className="text-lg md:text-xl mb-8 max-w-2xl mx-auto drop-shadow-md">
               Streamline your seed-to-sale workflow, manage inventory with unparalleled accuracy, and unlock data-driven insights to cultivate your business growth.
