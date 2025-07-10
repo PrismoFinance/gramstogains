@@ -54,6 +54,7 @@ export function AppSidebar({ user }: AppSidebarProps) {
           <span className="text-foreground group-data-[collapsible=icon]:hidden">
             Grams to <span className="text-primary">Gains</span>
           </span>
+           <ShoppingBag className="h-6 w-6 text-primary group-data-[collapsible=true]:block hidden" />
         </Link>
       </SidebarHeader>
       <SidebarSeparator />
@@ -65,11 +66,6 @@ export function AppSidebar({ user }: AppSidebarProps) {
                 asChild
                 isActive={pathname === item.href || (item.href !== '/dashboard' && pathname.startsWith(item.href))}
                 tooltip={item.label}
-                className={cn(
-                  (pathname === item.href || (item.href !== '/dashboard' && pathname.startsWith(item.href)))
-                  ? 'bg-sidebar-primary text-sidebar-primary-foreground hover:bg-sidebar-primary/90'
-                  : 'hover:bg-sidebar-accent hover:text-sidebar-accent-foreground'
-                )}
               >
                 <Link href={item.href}>
                   <item.icon className="h-5 w-5" />
