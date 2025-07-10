@@ -133,7 +133,7 @@ export default function ProductsPage() {
                 <Upload className="mr-2 h-5 w-5" />
                 Import from CSV
             </Button>
-            <Button onClick={handleAddProductTemplate} className="bg-accent hover:bg-accent/90 text-accent-foreground">
+            <Button onClick={handleAddProductTemplate}>
                 <PlusCircle className="mr-2 h-5 w-5" />
                 Add New Template
             </Button>

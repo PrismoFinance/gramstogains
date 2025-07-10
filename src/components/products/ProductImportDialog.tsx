@@ -259,7 +259,6 @@ export function ProductImportDialog({ isOpen, onClose, onImport, existingTemplat
             type="button"
             onClick={handleImportClick}
             disabled={parsedData.length === 0 || isLoading || !!error}
-            className="bg-accent hover:bg-accent/90 text-accent-foreground"
           >
             Import Data ({parsedData.length} batches)
           </Button>
@@ -268,4 +267,3 @@ export function ProductImportDialog({ isOpen, onClose, onImport, existingTemplat
     </Dialog>
   );
 }
-

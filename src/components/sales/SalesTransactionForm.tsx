@@ -426,7 +426,7 @@ export function WholesaleOrderForm({ productTemplates, productBatches, dispensar
         <Input type="text" value={currentUser.username} readOnly disabled className="bg-muted/50" />
       </div>
 
-      <Button type="submit" className="w-full bg-accent hover:bg-accent/90 text-accent-foreground" disabled={isSubmitting}>
+      <Button type="submit" className="w-full" disabled={isSubmitting}>
         {isSubmitting ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : 'Create Wholesale Order'}
       </Button>
     </form>

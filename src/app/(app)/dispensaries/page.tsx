@@ -148,7 +148,7 @@ export default function DispensariesPage() {
             </h1>
             <p className="text-muted-foreground">Manage your existing wholesale dispensary clients.</p>
           </div>
-          <Button onClick={handleAddClientDispensary} className="bg-accent hover:bg-accent/90 text-accent-foreground">
+          <Button onClick={handleAddClientDispensary}>
             <PlusCircle className="mr-2 h-5 w-5" />
             Add New Client
           </Button>
@@ -263,7 +263,7 @@ export default function DispensariesPage() {
                         onChange={(e) => setStateSearchTerm(e.target.value)}
                         className="flex-grow"
                     />
-                    <Button onClick={handleSearchProspects} disabled={isLoadingProspects} className="w-full sm:w-auto bg-primary hover:bg-primary/90 text-primary-foreground">
+                    <Button onClick={handleSearchProspects} disabled={isLoadingProspects}>
                         {isLoadingProspects ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Search className="mr-2 h-4 w-4" />}
                         Search Prospects
                     </Button>

@@ -122,7 +122,7 @@ export function LoginForm() {
               <p className="text-sm text-destructive">{form.formState.errors.password.message}</p>
             )}
           </div>
-          <Button type="submit" className="w-full bg-accent hover:bg-accent/90 text-accent-foreground" disabled={isLoading || isQuickAccessLoading || isMicrosoftLoginLoading}>
+          <Button type="submit" className="w-full" disabled={isLoading || isQuickAccessLoading || isMicrosoftLoginLoading}>
             {isLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : 'Sign In'}
           </Button>
         </form>

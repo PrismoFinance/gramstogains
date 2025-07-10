@@ -156,7 +156,7 @@ export default function AiInsightsPage() {
           </div>
         </CardContent>
         <CardFooter className="flex justify-end">
-          <Button onClick={handleGenerateInsights} disabled={isLoading} className="bg-accent hover:bg-accent/90 text-accent-foreground">
+          <Button onClick={handleGenerateInsights} disabled={isLoading}>
             {isLoading ? (
               <>
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />

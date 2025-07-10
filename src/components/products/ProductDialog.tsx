@@ -228,7 +228,7 @@ export function ProductDialog({ isOpen, onClose, onSave, product }: ProductDialo
             <DialogClose asChild>
               <Button type="button" variant="outline">Cancel</Button>
             </DialogClose>
-            <Button type="submit" disabled={isSubmitting} className="bg-accent hover:bg-accent/90 text-accent-foreground">
+            <Button type="submit" disabled={isSubmitting}>
               {isSubmitting ? 'Saving...' : (product ? 'Save Changes' : 'Add Product Template')}
             </Button>
           </DialogFooter>

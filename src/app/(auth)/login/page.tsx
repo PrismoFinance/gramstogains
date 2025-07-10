@@ -1,13 +1,13 @@
 
 import { LoginForm } from '@/components/auth/LoginForm';
-import { Dumbbell } from 'lucide-react'; 
+import { Package } from 'lucide-react'; 
 
 export default function LoginPage() {
   return (
     <div className="flex flex-col items-center justify-center min-h-screen p-4 bg-background">
       <div className="w-full max-w-md">
         <div className="text-center mb-8">
-          <Dumbbell className="mx-auto h-16 w-16 text-accent mb-4" /> 
+          <Package className="mx-auto h-16 w-16 text-primary mb-4" /> 
           <h1 className="text-4xl font-headline font-bold text-foreground">
             Grams to <span className="text-primary">Gains</span>
           </h1>

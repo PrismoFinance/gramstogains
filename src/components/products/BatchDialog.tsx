@@ -187,7 +187,7 @@ export function BatchDialog({
         {!isBatchFormOpen ? (
           <>
             <div className="flex justify-end mb-4">
-              <Button onClick={handleAddNewBatch} className="bg-accent hover:bg-accent/90 text-accent-foreground">
+              <Button onClick={handleAddNewBatch}>
                 <PlusCircle className="mr-2 h-4 w-4" /> Add New Batch
               </Button>
             </div>
@@ -313,7 +313,7 @@ export function BatchDialog({
             
             <div className="flex justify-end space-x-2 pt-4">
               <Button type="button" variant="outline" onClick={() => setIsBatchFormOpen(false)}>Cancel</Button>
-              <Button type="submit" disabled={isSubmitting} className="bg-accent hover:bg-accent/90 text-accent-foreground">
+              <Button type="submit" disabled={isSubmitting}>
                 {isSubmitting ? 'Saving...' : (editingBatch ? 'Save Changes' : 'Add Batch')}
               </Button>
             </div>

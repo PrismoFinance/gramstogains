@@ -139,7 +139,7 @@ export function DispensaryDialog({ isOpen, onClose, onSave, dispensary }: Dispen
             <DialogClose asChild>
               <Button type="button" variant="outline">Cancel</Button>
             </DialogClose>
-            <Button type="submit" disabled={isSubmitting} className="bg-accent hover:bg-accent/90 text-accent-foreground">
+            <Button type="submit" disabled={isSubmitting}>
               {isSubmitting ? 'Saving...' : (dispensary ? 'Save Changes' : 'Add Dispensary')}
             </Button>
           </DialogFooter>

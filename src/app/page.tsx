@@ -17,7 +17,7 @@ function PublicNavbar() {
 
         <nav className="hidden md:flex items-center space-x-6 text-sm font-medium">
           <DropdownMenu>
-            <DropdownMenuTrigger className="flex items-center hover:text-accent transition-colors">
+            <DropdownMenuTrigger className="flex items-center hover:text-primary transition-colors">
               Products <ChevronDown className="h-4 w-4 ml-1" />
             </DropdownMenuTrigger>
             <DropdownMenuContent>
@@ -27,16 +27,16 @@ function PublicNavbar() {
               <DropdownMenuItem>Concentrates</DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
-          <Link href="#" className="hover:text-accent transition-colors">Pricing</Link>
-          <Link href="#" className="hover:text-accent transition-colors">Contact Us</Link>
-          <Link href="#" className="hover:text-accent transition-colors">About Us</Link>
+          <Link href="#" className="hover:text-primary transition-colors">Pricing</Link>
+          <Link href="#" className="hover:text-primary transition-colors">Contact Us</Link>
+          <Link href="#" className="hover:text-primary transition-colors">About Us</Link>
         </nav>
 
         <div className="flex items-center justify-end space-x-2">
           <Button asChild variant="ghost">
             <Link href="/login">Login</Link>
           </Button>
-          <Button asChild className="bg-accent text-accent-foreground hover:bg-accent/90">
+          <Button asChild>
             <Link href="/login">Sign Up</Link>
           </Button>
         </div>
@@ -69,7 +69,7 @@ export default function LandingPage() {
               Streamline your seed-to-sale workflow, manage inventory with unparalleled accuracy, and unlock data-driven insights to cultivate your business growth.
             </p>
             <div className="space-x-4">
-              <Button asChild size="lg" className="bg-primary hover:bg-primary/90 text-primary-foreground">
+              <Button asChild size="lg">
                 <Link href="/dashboard">Get Started</Link>
               </Button>
               <Button asChild size="lg" variant="outline" className="bg-white/10 backdrop-blur-sm border-white text-white hover:bg-white/20">
