@@ -2,7 +2,7 @@
 'use client';
 
 import React, { useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
 import { SidebarProvider, Sidebar, SidebarInset } from '@/components/ui/sidebar';
 import { AppSidebar } from '@/components/layout/AppSidebar';
@@ -13,12 +13,18 @@ import { Skeleton } from '@/components/ui/skeleton';
 export default function AppLayout({ children }: { children: React.ReactNode }) {
   const { user, isLoading, logout } = useAuth();
   const router = useRouter();
+  const pathname = usePathname();
 
   useEffect(() => {
     if (!isLoading && !user) {
       router.replace('/login');
     }
   }, [user, isLoading, router]);
+
+  // If we're on the landing page, don't show the app layout
+  if (pathname === '/') {
+    return <>{children}</>
+  }
 
   if (isLoading || !user) {
     // Basic loading skeleton for the whole app layout

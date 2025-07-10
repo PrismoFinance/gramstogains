@@ -4,54 +4,6 @@
 
 @layer base {
   :root {
-    --background: 0 0% 100%; /* #FFFFFF Crisp White */
-    --foreground: 200 13% 18%; /* #263238 Deep Charcoal */
-
-    --card: 0 0% 100%; /* #FFFFFF White cards */
-    --card-foreground: 200 13% 18%; /* #263238 Deep Charcoal */
-
-    --popover: 0 0% 100%; /* #FFFFFF White popovers */
-    --popover-foreground: 200 13% 18%; /* #263238 Deep Charcoal */
-
-    --primary: 174 100% 24%; /* #00796B Dark Teal */
-    --primary-foreground: 0 0% 100%; /* White */
-
-    --secondary: 275 18% 52%; /* #8E6D9F Muted Purple */
-    --secondary-foreground: 0 0% 100%; /* White */
-
-    --muted: 0 0% 90%; /* #E6E6E6 Light Grey for muted bg */
-    --muted-foreground: 200 13% 59%; /* #90A4AE Cool Medium Grey */
-
-    --accent: 212 90% 55%; /* #2196F3 Blue */
-    --accent-foreground: 0 0% 100%; /* White */
-
-    --destructive: 0 84% 60%;
-    --destructive-foreground: 0 0% 100%;
-
-    --border: 0 0% 88%; /* #E0E0E0 Very light Cool Grey */
-    --input: 0 0% 88%; /* #E0E0E0 Very light Cool Grey */
-    --ring: 212 90% 55%; /* #2196F3 Blue */
-
-    --chart-1: 174 100% 24%; /* Dark Teal */
-    --chart-2: 275 18% 52%; /* Muted Purple */
-    --chart-3: 212 90% 55%; /* Blue */
-    --chart-4: 185 64% 56%; /* #4DD0E1 Cyan */
-    --chart-5: 27 67% 53%; /* #D28E3D A contrasting brown/orange */
-
-    --radius: 0.5rem;
-
-    --sidebar-background: 0 0% 98%; /* Almost white */
-    --sidebar-foreground: 200 13% 18%;
-    --sidebar-primary: 174 100% 24%; /* Dark Teal */
-    --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 0 0% 90%;
-    --sidebar-accent-foreground: 200 13% 18%;
-    --sidebar-border: 0 0% 88%;
-    --sidebar-ring: 212 90% 55%;
-  }
-
-  .dark {
-    /* Keeping a dark theme definition for potential future use or system preference */
     --background: 200 13% 10%; /* Dark Blue Grey */
     --foreground: 0 0% 98%;
 
@@ -61,16 +13,16 @@
     --popover: 200 13% 8%;
     --popover-foreground: 0 0% 98%;
 
-    --primary: 174 100% 34%; /* Lighter Teal for dark mode */
-    --primary-foreground: 0 0% 98%;
+    --primary: 98 62% 51%; /* #66cc66 - a vibrant, techy green */
+    --primary-foreground: 200 13% 10%;
 
-    --secondary: 275 22% 62%; /* Lighter Muted Purple */
+    --secondary: 275 22% 62%; /* #9e8aaf Muted Purple */
     --secondary-foreground: 0 0% 98%;
 
     --muted: 200 13% 20%;
     --muted-foreground: 200 13% 69%;
 
-    --accent: 212 90% 65%; /* Lighter Blue */
+    --accent: 291 80% 65%; /* #d980ff - Orchid */
     --accent-foreground: 200 13% 10%;
 
     --destructive: 0 63% 51%;
@@ -78,22 +30,69 @@
 
     --border: 200 13% 20%;
     --input: 200 13% 20%;
-    --ring: 212 90% 65%;
+    --ring: 98 62% 51%; /* ring color to match primary */
 
-    --chart-1: 174 100% 34%;
-    --chart-2: 275 22% 62%;
-    --chart-3: 212 90% 65%;
-    --chart-4: 185 64% 66%;
-    --chart-5: 27 67% 63%;
+    --chart-1: 98 62% 51%; /* primary */
+    --chart-2: 291 80% 65%; /* accent */
+    --chart-3: 275 22% 62%; /* secondary */
+    --chart-4: 51 100% 50%; /* gold/yellow */
+    --chart-5: 200 13% 69%; /* muted-foreground */
+
+    --radius: 0.5rem;
 
     --sidebar-background: 200 13% 8%;
     --sidebar-foreground: 0 0% 98%;
-    --sidebar-primary: 174 100% 34%;
-    --sidebar-primary-foreground: 0 0% 98%;
+    --sidebar-primary: 98 62% 51%;
+    --sidebar-primary-foreground: 200 13% 10%;
     --sidebar-accent: 200 13% 18%;
     --sidebar-accent-foreground: 0 0% 98%;
     --sidebar-border: 200 13% 20%;
-    --sidebar-ring: 212 90% 65%;
+    --sidebar-ring: 98 62% 51%;
+  }
+
+  .dark {
+    --background: 200 13% 10%; /* Dark Blue Grey */
+    --foreground: 0 0% 98%;
+
+    --card: 200 13% 14%;
+    --card-foreground: 0 0% 98%;
+
+    --popover: 200 13% 8%;
+    --popover-foreground: 0 0% 98%;
+
+    --primary: 98 62% 51%; /* #66cc66 - a vibrant, techy green */
+    --primary-foreground: 200 13% 10%;
+
+    --secondary: 275 22% 62%; /* #9e8aaf Muted Purple */
+    --secondary-foreground: 0 0% 98%;
+
+    --muted: 200 13% 20%;
+    --muted-foreground: 200 13% 69%;
+
+    --accent: 291 80% 65%; /* #d980ff - Orchid */
+    --accent-foreground: 200 13% 10%;
+
+    --destructive: 0 63% 51%;
+    --destructive-foreground: 0 0% 98%;
+
+    --border: 200 13% 20%;
+    --input: 200 13% 20%;
+    --ring: 98 62% 51%; /* ring color to match primary */
+    
+    --chart-1: 98 62% 51%; /* primary */
+    --chart-2: 291 80% 65%; /* accent */
+    --chart-3: 275 22% 62%; /* secondary */
+    --chart-4: 51 100% 50%; /* gold/yellow */
+    --chart-5: 200 13% 69%; /* muted-foreground */
+
+    --sidebar-background: 200 13% 8%;
+    --sidebar-foreground: 0 0% 98%;
+    --sidebar-primary: 98 62% 51%;
+    --sidebar-primary-foreground: 200 13% 10%;
+    --sidebar-accent: 200 13% 18%;
+    --sidebar-accent-foreground: 0 0% 98%;
+    --sidebar-border: 200 13% 20%;
+    --sidebar-ring: 98 62% 51%;
   }
 }
 
