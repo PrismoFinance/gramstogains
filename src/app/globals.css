@@ -4,89 +4,97 @@
 
 @layer base {
   :root {
-    --background: 240 3% 16%; /* #28282B Dark Gray */
-    --foreground: 0 0% 98%; /* Light text for dark background */
+    --background: 0 0% 0%; /* Black */
+    --foreground: 0 0% 100%; /* White */
 
-    --card: 240 3% 20%; /* Slightly lighter than background */
-    --card-foreground: 0 0% 98%;
+    --card: 0 0% 8%; /* Dark Gray, almost black for cards */
+    --card-foreground: 0 0% 100%;
 
-    --popover: 240 3% 18%;
-    --popover-foreground: 0 0% 98%;
+    --popover: 0 0% 5%; /* Even darker for popovers */
+    --popover-foreground: 0 0% 100%;
 
-    --primary: 101 30% 39%; /* #4F7942 Deep, desaturated green */
-    --primary-foreground: 101 30% 95%; /* Light text on primary */
+    --primary: 158 100% 33%; /* #00A86B Emerald Green */
+    --primary-foreground: 158 100% 95%; /* Very light green for text on primary */
 
-    --secondary: 240 3% 25%; /* For secondary elements */
-    --secondary-foreground: 0 0% 98%;
+    --secondary: 270 50% 60%; /* #9966CC Amethyst Purple */
+    --secondary-foreground: 270 50% 98%; /* Light text on secondary */
 
-    --muted: 240 3% 22%;
-    --muted-foreground: 0 0% 63.9%;
+    --muted: 0 0% 15%; /* Muted Gray */
+    --muted-foreground: 0 0% 65%; /* Lighter gray for muted text */
 
-    --accent: 39 92% 53%; /* #fbad18 Gold */
-    --accent-foreground: 39 92% 10%; /* Darker text for gold accent */
+    --accent: 51 100% 50%; /* #FFD700 Pure Gold */
+    --accent-foreground: 51 100% 5%; /* Very dark for text on gold accent */
 
     --destructive: 0 72% 51%; /* Brighter red for destructive actions */
     --destructive-foreground: 0 0% 98%;
 
-    --border: 240 3% 25%; /* Slightly lighter border */
-    --input: 240 3% 22%;
-    --ring: 39 92% 53%; /* Accent color for rings */
+    --border: 0 0% 15%; /* Muted Gray for borders */
+    --input: 0 0% 12%; /* Slightly lighter gray for inputs */
+    --ring: 51 100% 50%; /* Gold for rings */
 
-    --chart-1: 101 30% 50%;
-    --chart-2: 39 92% 60%;
-    --chart-3: 210 40% 50%;
-    --chart-4: 355 86% 60%;
-    --chart-5: 150 40% 50%;
+    --chart-1: 158 100% 33%; /* Emerald */
+    --chart-2: 270 50% 60%; /* Amethyst */
+    --chart-3: 51 100% 50%; /* Gold */
+    --chart-4: 210 40% 50%; /* A contrasting blue */
+    --chart-5: 355 86% 60%; /* A contrasting red */
 
     --radius: 0.5rem;
 
-    --sidebar-background: 240 3% 14%; /* Slightly darker than main bg for contrast */
+    --sidebar-background: 0 0% 5%; /* Darker than main bg for contrast */
     --sidebar-foreground: 0 0% 90%;
-    --sidebar-primary: 39 92% 53%; /* Gold for active/primary items in sidebar */
-    --sidebar-primary-foreground: 39 92% 10%;
-    --sidebar-accent: 240 3% 20%;
+    --sidebar-primary: 51 100% 50%; /* Gold for active/primary items in sidebar */
+    --sidebar-primary-foreground: 51 100% 5%;
+    --sidebar-accent: 0 0% 12%;
     --sidebar-accent-foreground: 0 0% 98%;
-    --sidebar-border: 240 3% 22%;
-    --sidebar-ring: 39 92% 53%;
+    --sidebar-border: 0 0% 15%;
+    --sidebar-ring: 51 100% 50%;
 
     --brand-red: 355 86% 53%; /* #ee212e */
   }
 
   .dark {
-    --background: 240 3% 16%;
-    --foreground: 0 0% 98%;
-    --card: 240 3% 20%;
-    --card-foreground: 0 0% 98%;
-    --popover: 240 3% 18%;
-    --popover-foreground: 0 0% 98%;
-    --primary: 101 30% 39%;
-    --primary-foreground: 101 30% 95%;
-    --secondary: 240 3% 25%;
-    --secondary-foreground: 0 0% 98%;
-    --muted: 240 3% 22%;
-    --muted-foreground: 0 0% 63.9%;
-    --accent: 39 92% 53%;
-    --accent-foreground: 39 92% 10%;
+    --background: 0 0% 0%; /* Black */
+    --foreground: 0 0% 100%; /* White */
+
+    --card: 0 0% 8%; /* Dark Gray, almost black for cards */
+    --card-foreground: 0 0% 100%;
+
+    --popover: 0 0% 5%; /* Even darker for popovers */
+    --popover-foreground: 0 0% 100%;
+
+    --primary: 158 100% 33%; /* #00A86B Emerald Green */
+    --primary-foreground: 158 100% 95%; /* Very light green for text on primary */
+
+    --secondary: 270 50% 60%; /* #9966CC Amethyst Purple */
+    --secondary-foreground: 270 50% 98%; /* Light text on secondary */
+
+    --muted: 0 0% 15%; /* Muted Gray */
+    --muted-foreground: 0 0% 65%; /* Lighter gray for muted text */
+
+    --accent: 51 100% 50%; /* #FFD700 Pure Gold */
+    --accent-foreground: 51 100% 5%; /* Very dark for text on gold accent */
+
     --destructive: 0 72% 51%;
     --destructive-foreground: 0 0% 98%;
-    --border: 240 3% 25%;
-    --input: 240 3% 22%;
-    --ring: 39 92% 53%;
-    
-    --chart-1: 101 30% 50%;
-    --chart-2: 39 92% 60%;
-    --chart-3: 210 40% 50%;
-    --chart-4: 355 86% 60%;
-    --chart-5: 150 40% 50%;
 
-    --sidebar-background: 240 3% 14%;
+    --border: 0 0% 15%;
+    --input: 0 0% 12%;
+    --ring: 51 100% 50%;
+    
+    --chart-1: 158 100% 33%; /* Emerald */
+    --chart-2: 270 50% 60%; /* Amethyst */
+    --chart-3: 51 100% 50%; /* Gold */
+    --chart-4: 210 40% 50%; /* A contrasting blue */
+    --chart-5: 355 86% 60%; /* A contrasting red */
+
+    --sidebar-background: 0 0% 5%;
     --sidebar-foreground: 0 0% 90%;
-    --sidebar-primary: 39 92% 53%;
-    --sidebar-primary-foreground: 39 92% 10%;
-    --sidebar-accent: 240 3% 20%;
+    --sidebar-primary: 51 100% 50%;
+    --sidebar-primary-foreground: 51 100% 5%;
+    --sidebar-accent: 0 0% 12%;
     --sidebar-accent-foreground: 0 0% 98%;
-    --sidebar-border: 240 3% 22%;
-    --sidebar-ring: 39 92% 53%;
+    --sidebar-border: 0 0% 15%;
+    --sidebar-ring: 51 100% 50%;
 
     --brand-red: 355 86% 53%;
   }
