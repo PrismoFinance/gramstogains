@@ -1,4 +1,5 @@
 
+
 export interface User {
   id: string;
   username: string;
@@ -78,9 +79,9 @@ export interface Dispensary {
   isExistingClient?: boolean; // Added dynamically during prospecting search
 }
 
-// For AI insights - Adjusted to new structures
+// For AI insights - DEPRECATED in favor of conversational flow
 // ProductTemplate details for AI
-export interface ProductTemplateForAI extends Pick<ProductTemplate, 'id' | 'productName' | 'productCategory' | 'strainType' | 'coaUrl'> {}
+export interface ProductTemplateForAI extends Pick<ProductTemplate, 'id' | 'productName' | 'productCategory' | 'strainType' > {}
 
 // ProductBatch details for AI
 export interface ProductBatchForAI extends Pick<ProductBatch, 'id' | 'productTemplateId' | 'metrcPackageId' | 'thcPercentage' | 'cbdPercentage' | 'wholesalePricePerUnit' | 'currentStockQuantity'> {}
@@ -108,3 +109,5 @@ export interface WholesaleDataForAI {
   wholesaleOrders: WholesaleOrderForAI[];
   dispensaries: Pick<Dispensary, 'id' | 'dispensaryName' | 'licenseNumber' | 'address' | 'state'>[];
 }
+
+    

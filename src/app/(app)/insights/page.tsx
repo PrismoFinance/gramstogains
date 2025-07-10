@@ -1,20 +1,25 @@
 
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
-import { Textarea } from '@/components/ui/textarea';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { Lightbulb, Loader2, AlertTriangle, HelpCircle } from 'lucide-react';
-import { generateSalesInsights, type GenerateSalesInsightsOutput } from '@/ai/flows/generate-sales-insights';
-import { mockProductTemplates, mockProductBatches, mockWholesaleOrders, mockDispensaries } from '@/lib/mock-data';
-import type { WholesaleDataForAI, ProductTemplateForAI, ProductBatchForAI, WholesaleOrderForAI, Dispensary } from '@/lib/types';
+import { Lightbulb, Loader2, AlertTriangle, Search, PieChartIcon, List } from 'lucide-react';
+import { generateSalesInsights, type GenerateSalesInsightsOutput, type SalesInsightsProduct } from '@/ai/flows/generate-sales-insights';
+import { mockProductTemplates, mockWholesaleOrders } from '@/lib/mock-data';
 import { useToast } from '@/hooks/use-toast';
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Legend } from 'recharts';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { SimpleDateRangePicker } from '@/components/reports/SimpleDateRangePicker';
+import type { DateRange } from 'react-day-picker';
+import { Badge } from '@/components/ui/badge';
+
+const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#AF19FF'];
+const ALL_FILTER_VALUE = "_all_";
 
 export default function AiInsightsPage() {
   const { user } = useAuth();
@@ -24,35 +29,27 @@ export default function AiInsightsPage() {
   const [error, setError] = useState<string | null>(null);
   const { toast } = useToast();
 
-  // Prepare data for AI, transforming mock data into AI-specific types
-  const exampleWholesaleData: WholesaleDataForAI = {
-    productTemplates: mockProductTemplates.map(({ id, productName, productCategory, strainType }) => ({ id, productName, productCategory, strainType })),
-    productBatches: mockProductBatches.map(({ id, productTemplateId, metrcPackageId, thcPercentage, cbdPercentage, wholesalePricePerUnit, currentStockQuantity }) => ({ id, productTemplateId, metrcPackageId, thcPercentage, cbdPercentage, wholesalePricePerUnit, currentStockQuantity })),
-    wholesaleOrders: mockWholesaleOrders.map(order => ({
-      id: order.id,
-      dispensaryId: order.dispensaryId,
-      productsOrdered: order.productsOrdered.map(po => ({
-        productTemplateId: po.productTemplateId,
-        productBatchId: po.productBatchId,
-        productName: po.productName,
-        batchMetrcPackageId: po.batchMetrcPackageId,
-        quantity: po.quantity,
-        wholesalePricePerUnit: po.wholesalePricePerUnit,
-        subtotal: po.subtotal,
-        thcPercentageAtSale: po.thcPercentageAtSale,
-        cbdPercentageAtSale: po.cbdPercentageAtSale,
-      })),
-      totalOrderAmount: order.totalOrderAmount,
-      orderDate: order.orderDate,
-      salesAssociateId: order.salesAssociateId,
-      paymentStatus: order.paymentStatus,
-      metrcManifestId: order.metrcManifestId,
-    })),
-    dispensaries: mockDispensaries.map(({ id, dispensaryName, licenseNumber, address }) => ({ id, dispensaryName, licenseNumber, address })),
-  };
+  const [question, setQuestion] = useState('What are our best selling 510 carts over the last 60 days?');
+  const [dateRange, setDateRange] = useState<DateRange | undefined>(undefined);
+  const [productCategoryFilter, setProductCategoryFilter] = useState('Vapes');
 
-  const [wholesaleDataInput, setWholesaleDataInput] = useState(JSON.stringify(exampleWholesaleData, null, 2));
-  const [analysisFocus, setAnalysisFocus] = useState('');
+  const productCategories = useMemo(() => Array.from(new Set(mockProductTemplates.map(pt => pt.productCategory))), []);
+  
+  const groupedProductsByStrain = useMemo(() => {
+    if (!insightsResult?.detailedProductList) return {};
+    
+    return insightsResult.detailedProductList.reduce((acc, product) => {
+      const strain = product.strainType || 'Other';
+      if (!acc[strain]) {
+        acc[strain] = [];
+      }
+      acc[strain].push(product);
+      // Sort by quantity desc within each strain
+      acc[strain].sort((a, b) => b.totalQuantitySold - a.totalQuantitySold);
+      return acc;
+    }, {} as Record<string, SalesInsightsProduct[]>);
+
+  }, [insightsResult]);
 
 
   React.useEffect(() => {
@@ -70,39 +67,45 @@ export default function AiInsightsPage() {
     setInsightsResult(null);
     setError(null);
     try {
-      let parsedData: WholesaleDataForAI;
-      try {
-        parsedData = JSON.parse(wholesaleDataInput);
-      } catch (e) {
-         throw new SyntaxError("Invalid JSON format in wholesale data. Please check your input.");
+      if (!question.trim()) {
+        throw new Error("Please ask a question to analyze.");
       }
       
-      if (!parsedData.productTemplates || !parsedData.productBatches || !parsedData.wholesaleOrders || !parsedData.dispensaries) {
-        throw new Error("Missing one or more required data fields (productTemplates, productBatches, wholesaleOrders, dispensaries).");
-      }
-
-      const inputForAI: WholesaleDataForAI & { analysisFocus?: string } = {
-        ...parsedData,
-        analysisFocus: analysisFocus || undefined,
-      };
-
-      const result: GenerateSalesInsightsOutput = await generateSalesInsights(inputForAI);
+      const result = await generateSalesInsights({
+        naturalLanguageQuery: question,
+        filters: {
+            dateRange,
+            productCategory: productCategoryFilter === ALL_FILTER_VALUE ? undefined : productCategoryFilter,
+        },
+        // In a real app, you might pass all data or the AI would use a tool to fetch it.
+        // For this mock, we pass it all.
+        allOrders: mockWholesaleOrders,
+        allTemplates: mockProductTemplates
+      });
       setInsightsResult(result);
       toast({ title: 'Insights Generated', description: 'AI analysis complete.' });
     } catch (e: any) {
       console.error("Error generating insights:", e);
-      let errorMessage = "Failed to generate insights. Please try again.";
-      if (e instanceof SyntaxError) {
-        errorMessage = e.message;
-      } else if (e.message) {
-        errorMessage = e.message;
-      }
-      setError(errorMessage);
-      toast({ title: 'Error', description: errorMessage, variant: 'destructive' });
+      setError(e.message || "Failed to generate insights. Please try again.");
+      toast({ title: 'Error', description: e.message, variant: 'destructive' });
     } finally {
       setIsLoading(false);
     }
   };
+
+  const renderCustomizedLabel = ({ cx, cy, midAngle, innerRadius, outerRadius, percent, index, name }: any) => {
+    const RADIAN = Math.PI / 180;
+    const radius = innerRadius + (outerRadius - innerRadius) * 0.5;
+    const x = cx + radius * Math.cos(-midAngle * RADIAN);
+    const y = cy + radius * Math.sin(-midAngle * RADIAN);
+
+    return (
+        <text x={x} y={y} fill="white" textAnchor={x > cx ? 'start' : 'end'} dominantBaseline="central" className="text-xs font-medium">
+            {`${name} (${(percent * 100).toFixed(0)}%)`}
+        </text>
+    );
+};
+
 
   return (
     <div className="space-y-6">
@@ -110,46 +113,46 @@ export default function AiInsightsPage() {
         <div>
           <h1 className="text-3xl font-headline font-bold flex items-center">
             <Lightbulb className="mr-3 h-8 w-8 text-accent" />
-            AI-Powered Wholesale Insights
+            Conversational Sales Analysis
           </h1>
-          <p className="text-muted-foreground">Analyze wholesale order data to uncover trends and opportunities.</p>
+          <p className="text-muted-foreground">Ask questions about your sales data to uncover trends and opportunities.</p>
         </div>
       </div>
 
       <Card className="shadow-xl">
         <CardHeader>
-          <CardTitle>Wholesale Data Input</CardTitle>
+          <CardTitle>Ask a Question</CardTitle>
           <CardDescription>
-            Paste your wholesale data in JSON format. This should include product templates, specific product batches, wholesale orders, and dispensary information.
-            An example structure (based on current mock data) is pre-filled.
+            Use natural language to query your sales data. You can also use the filters below to narrow your focus. The AI will analyze the relevant data to answer your question.
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
-          <Textarea
-            value={wholesaleDataInput}
-            onChange={(e) => setWholesaleDataInput(e.target.value)}
-            placeholder="Enter wholesale data as JSON..."
-            rows={15}
-            className="font-code text-sm"
-          />
-          <div>
-            <Label htmlFor="analysisFocus" className="flex items-center gap-1">
-              Analysis Focus (Optional)
-              <TooltipProvider>
-                <Tooltip>
-                  <TooltipTrigger asChild><HelpCircle className="h-4 w-4 text-muted-foreground cursor-help" /></TooltipTrigger>
-                  <TooltipContent className="w-64">
-                    <p>Guide the AI by specifying areas of interest, e.g., "Identify underperforming product templates" or "Which METRC batches are selling fastest?".</p>
-                  </TooltipContent>
-                </Tooltip>
-              </TooltipProvider>
-            </Label>
-            <Input 
-              id="analysisFocus"
-              value={analysisFocus}
-              onChange={(e) => setAnalysisFocus(e.target.value)}
-              placeholder="e.g., Top selling strains to urban dispensaries"
-            />
+            <div className="space-y-2">
+                <Label htmlFor="naturalLanguageQuery">Your Question</Label>
+                <Input 
+                id="naturalLanguageQuery"
+                value={question}
+                onChange={(e) => setQuestion(e.target.value)}
+                placeholder="e.g., 'What are my top selling flower products this month?'"
+                />
+            </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+             <div>
+                <Label>Date Range (Optional)</Label>
+                <SimpleDateRangePicker date={dateRange} onDateChange={setDateRange} />
+             </div>
+             <div>
+                <Label>Product Category (Optional)</Label>
+                <Select value={productCategoryFilter} onValueChange={setProductCategoryFilter}>
+                    <SelectTrigger>
+                        <SelectValue placeholder="Filter by Category" />
+                    </SelectTrigger>
+                    <SelectContent>
+                        <SelectItem value={ALL_FILTER_VALUE}>All Categories</SelectItem>
+                        {productCategories.map(cat => <SelectItem key={cat} value={cat}>{cat}</SelectItem>)}
+                    </SelectContent>
+                </Select>
+             </div>
           </div>
         </CardContent>
         <CardFooter className="flex justify-end">
@@ -157,10 +160,13 @@ export default function AiInsightsPage() {
             {isLoading ? (
               <>
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                Generating...
+                Analyzing...
               </>
             ) : (
-              'Generate Insights'
+                <>
+                 <Search className="mr-2 h-4 w-4" />
+                 Generate Insights
+                </>
             )}
           </Button>
         </CardFooter>
@@ -178,47 +184,91 @@ export default function AiInsightsPage() {
         </Card>
       )}
 
+      {isLoading && (
+         <Card className="shadow-lg text-center p-10">
+            <Loader2 className="h-12 w-12 animate-spin text-primary mx-auto" />
+            <CardTitle className="mt-4">Analyzing Sales Data...</CardTitle>
+            <CardDescription className="mt-2">The AI is processing your request. Please wait a moment.</CardDescription>
+         </Card>
+      )}
+
       {insightsResult && (
-        <div className="space-y-4">
+        <div className="space-y-6">
             <Card className="shadow-xl">
                 <CardHeader>
-                    <CardTitle>Generated Insights</CardTitle>
-                    <CardDescription>Review the AI-generated analysis below.</CardDescription>
+                    <CardTitle>Analysis Summary</CardTitle>
+                    <CardDescription>A brief summary of the findings based on your question.</CardDescription>
                 </CardHeader>
                 <CardContent>
                     <div className="prose prose-sm dark:prose-invert max-w-none p-4 bg-muted/30 rounded-md whitespace-pre-wrap">
-                    {insightsResult.insights}
+                    {insightsResult.summary}
                     </div>
                 </CardContent>
             </Card>
-
-            {insightsResult.suggestedActions && insightsResult.suggestedActions.length > 0 && (
-                 <Card className="shadow-lg border-accent">
-                    <CardHeader>
-                        <CardTitle className="text-accent">Suggested Actions</CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                        <ul className="list-disc pl-5 space-y-1 text-sm">
-                            {insightsResult.suggestedActions.map((action, idx) => <li key={idx}>{action}</li>)}
-                        </ul>
-                    </CardContent>
-                </Card>
-            )}
-
-            {insightsResult.warnings && insightsResult.warnings.length > 0 && (
-                 <Card className="shadow-lg border-destructive">
-                    <CardHeader>
-                        <CardTitle className="text-destructive">Warnings / Risks</CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                        <ul className="list-disc pl-5 space-y-1 text-sm">
-                            {insightsResult.warnings.map((warning, idx) => <li key={idx}>{warning}</li>)}
-                        </ul>
-                    </CardContent>
-                </Card>
-            )}
+            
+            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-5">
+                {insightsResult.topProductsChartData && insightsResult.topProductsChartData.length > 0 && (
+                    <Card className="lg:col-span-2 shadow-lg">
+                        <CardHeader>
+                            <CardTitle className="flex items-center"><PieChartIcon className="mr-2 h-5 w-5 text-primary" />Top 5 Products by Quantity</CardTitle>
+                        </CardHeader>
+                        <CardContent className="h-[300px]">
+                            <ResponsiveContainer width="100%" height="100%">
+                                <PieChart>
+                                <Pie
+                                    data={insightsResult.topProductsChartData}
+                                    cx="50%"
+                                    cy="50%"
+                                    labelLine={false}
+                                    label={renderCustomizedLabel}
+                                    outerRadius={100}
+                                    fill="#8884d8"
+                                    dataKey="value"
+                                    nameKey="name"
+                                >
+                                    {insightsResult.topProductsChartData.map((entry, index) => (
+                                    <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                                    ))}
+                                </Pie>
+                                <Tooltip
+                                    contentStyle={{
+                                        backgroundColor: 'hsl(var(--popover))',
+                                        borderColor: 'hsl(var(--border))',
+                                    }}
+                                />
+                                </PieChart>
+                            </ResponsiveContainer>
+                        </CardContent>
+                    </Card>
+                )}
+                
+                {Object.keys(groupedProductsByStrain).length > 0 && (
+                     <Card className="lg:col-span-3 shadow-lg">
+                        <CardHeader>
+                             <CardTitle className="flex items-center"><List className="mr-2 h-5 w-5 text-primary"/>Detailed List by Strain</CardTitle>
+                        </CardHeader>
+                        <CardContent className="max-h-[300px] overflow-y-auto">
+                           {Object.entries(groupedProductsByStrain).map(([strain, products]) => (
+                                <div key={strain} className="mb-4 last:mb-0">
+                                    <h4 className="font-semibold text-md mb-2 text-accent">{strain}</h4>
+                                    <ul className="space-y-2">
+                                        {products.map(product => (
+                                            <li key={product.productTemplateId} className="flex justify-between items-center text-sm p-2 bg-muted/20 rounded-md">
+                                                <span>{product.productName}</span>
+                                                <Badge variant="secondary">Sold: {product.totalQuantitySold}</Badge>
+                                            </li>
+                                        ))}
+                                    </ul>
+                                </div>
+                           ))}
+                        </CardContent>
+                    </Card>
+                )}
+            </div>
         </div>
       )}
     </div>
   );
 }
+
+    

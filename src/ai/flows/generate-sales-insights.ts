@@ -3,153 +3,206 @@
 'use server';
 
 /**
- * @fileOverview Analyzes wholesale order data to identify correlations, trends, and potential insights for a manufacturing lab, 
- * suggesting new product development or vendor outreach based on dispensary purchasing patterns and inventory gaps.
+ * @fileOverview Analyzes wholesale order data to answer natural language questions about sales performance.
  *
- * - generateSalesInsights - A function that triggers the wholesale insights generation process.
+ * - generateSalesInsights - A function that triggers the sales analysis process.
  * - GenerateSalesInsightsInput - The input type for the generateSalesInsights function.
  * - GenerateSalesInsightsOutput - The return type for the generateSalesInsights function.
  */
 
 import {ai} from '@/ai/genkit';
 import {z} from 'genkit';
-import type { WholesaleDataForAI, ProductTemplateForAI, ProductBatchForAI, WholesaleOrderForAI, Dispensary } from '@/lib/types'; 
+import {
+  WholesaleOrder,
+  ProductTemplate
+} from '@/lib/types';
+import {
+  parse,
+  isWithinInterval,
+  subDays
+} from 'date-fns';
 
-// Define Zod schemas for input validation based on WholesaleDataForAI
+// Schemas for the new conversational flow
 
-const ProductTemplateForAISchema = z.object({
-  id: z.string(),
-  productName: z.string(),
-  productCategory: z.string(),
-  strainType: z.string(),
+const SalesInsightsFiltersSchema = z.object({
+  dateRange: z.object({
+    from: z.date().optional(),
+    to: z.date().optional(),
+  }).optional().describe("Date range to filter the sales data."),
+  productCategory: z.string().optional().describe("Filter sales data by a specific product category (e.g., 'Vapes', 'Flower')."),
 });
 
-const ProductBatchForAISchema = z.object({
-  id: z.string(),
-  productTemplateId: z.string(),
-  metrcPackageId: z.string(),
-  thcPercentage: z.number(),
-  cbdPercentage: z.number(),
-  wholesalePricePerUnit: z.number(),
-  currentStockQuantity: z.number(),
-});
-
-const ProductOrderedForAISchema = z.object({
-  productTemplateId: z.string(),
-  productBatchId: z.string(),
-  productName: z.string(), // from template
-  batchMetrcPackageId: z.string(), // from batch
-  quantity: z.number(),
-  wholesalePricePerUnit: z.number(), // from batch
-  subtotal: z.number(),
-  thcPercentageAtSale: z.number().optional(), // from batch
-  cbdPercentageAtSale: z.number().optional(), // from batch
-});
-
-const WholesaleOrderForAISchema = z.object({
-  id: z.string(),
-  dispensaryId: z.string(),
-  productsOrdered: z.array(ProductOrderedForAISchema),
-  totalOrderAmount: z.number(),
-  orderDate: z.string(), // ISO date string
-  salesAssociateId: z.string(),
-  paymentStatus: z.string(),
-  metrcManifestId: z.string().optional(),
-});
-
-const DispensaryForAISchema = z.object({
-  id: z.string(),
-  dispensaryName: z.string(),
-  licenseNumber: z.string(),
-  address: z.string().optional(),
-});
-
+// We are not using a tool for this simple case, so the AI will receive all the data.
+// In a real-world app, a tool would fetch this from a database based on filters.
 const GenerateSalesInsightsInputSchema = z.object({
-  productTemplates: z.array(ProductTemplateForAISchema).describe("List of product templates offered by the manufacturing lab."),
-  productBatches: z.array(ProductBatchForAISchema).describe("List of specific product batches, each with a METRC ID, test results, and stock."),
-  wholesaleOrders: z.array(WholesaleOrderForAISchema).describe("List of wholesale orders placed by dispensaries, detailing which batches were sold."),
-  dispensaries: z.array(DispensaryForAISchema).describe("List of dispensaries the lab sells to."),
-  analysisFocus: z.string().optional().describe("Optional: Specific area or question to focus the analysis on.")
+  naturalLanguageQuery: z.string().describe("The user's question about their sales data."),
+  filters: SalesInsightsFiltersSchema.optional().describe("Structured filters to apply to the data before analysis."),
+  allOrders: z.any().describe("An array of all wholesale order objects."),
+  allTemplates: z.any().describe("An array of all product template objects."),
 });
-export type GenerateSalesInsightsInput = z.infer<typeof GenerateSalesInsightsInputSchema>;
+export type GenerateSalesInsightsInput = z.infer < typeof GenerateSalesInsightsInputSchema > ;
 
+// Define the structure for the detailed product list and chart data
+export const SalesInsightsProductSchema = z.object({
+  productTemplateId: z.string(),
+  productName: z.string(),
+  strainType: z.string(),
+  totalQuantitySold: z.number(),
+});
+export type SalesInsightsProduct = z.infer < typeof SalesInsightsProductSchema > ;
+
+const TopProductChartDataItemSchema = z.object({
+  name: z.string().describe("The name of the product."),
+  value: z.number().describe("The total quantity sold for this product."),
+});
 
 const GenerateSalesInsightsOutputSchema = z.object({
-  insights: z.string().describe('AI-generated insights, trends, and actionable suggestions for optimizing wholesale operations and product strategy.'),
-  suggestedActions: z.array(z.string()).optional().describe("List of concrete actions suggested by the AI."),
-  warnings: z.array(z.string()).optional().describe("Potential warnings or risks identified from the data (e.g., low stock for popular batches, declining sales for a product line).")
+  summary: z.string().describe('A concise, natural language summary of the findings that directly answers the user\'s question.'),
+  topProductsChartData: z.array(TopProductChartDataItemSchema).optional().describe("Data for the top 5 products to be displayed in a pie chart, where 'name' is the product name and 'value' is the total quantity sold."),
+  detailedProductList: z.array(SalesInsightsProductSchema).optional().describe("A comprehensive list of all products that match the query, including their total quantity sold and strain type, for detailed display."),
 });
-export type GenerateSalesInsightsOutput = z.infer<typeof GenerateSalesInsightsOutputSchema>;
+export type GenerateSalesInsightsOutput = z.infer < typeof GenerateSalesInsightsOutputSchema > ;
 
-export async function generateSalesInsights(input: WholesaleDataForAI & { analysisFocus?: string }): Promise<GenerateSalesInsightsOutput> {
-  const validatedInput: GenerateSalesInsightsInput = {
-    productTemplates: input.productTemplates,
-    productBatches: input.productBatches,
-    wholesaleOrders: input.wholesaleOrders,
-    dispensaries: input.dispensaries,
-    analysisFocus: input.analysisFocus,
+
+// This is the main function called by the UI.
+export async function generateSalesInsights(input: GenerateSalesInsightsInput): Promise < GenerateSalesInsightsOutput > {
+  // 1. Pre-filter data based on structured filters (Date and Category)
+  // This simulates what would happen in a database query before hitting the LLM.
+  const allOrders: WholesaleOrder[] = input.allOrders;
+  const allTemplates: ProductTemplate[] = input.allTemplates;
+
+  const sixtyDaysAgo = subDays(new Date(), 60);
+  const now = new Date();
+
+  // Default to last 60 days if no date range is provided in the filter
+  const dateFrom = input.filters?.dateRange?.from || sixtyDaysAgo;
+  const dateTo = input.filters?.dateRange?.to || now;
+  const interval = {
+    start: dateFrom,
+    end: dateTo
   };
-  return generateSalesInsightsFlow(validatedInput);
+
+  const categoryFilter = input.filters?.productCategory;
+
+  const relevantTemplateIds = new Set(
+    allTemplates
+    .filter(t => !categoryFilter || t.productCategory === categoryFilter)
+    .map(t => t.id)
+  );
+
+  const filteredOrders = allOrders.filter(order => {
+    const orderDate = new Date(order.orderDate);
+    const dateMatch = isWithinInterval(orderDate, interval);
+    if (!dateMatch) return false;
+
+    // Check if any product in the order matches the category filter
+    return order.productsOrdered.some(p => relevantTemplateIds.has(p.productTemplateId));
+  });
+
+  // 2. Aggregate filtered data to create a simplified data structure for the AI.
+  // This reduces the amount of data sent to the LLM.
+  const productSales: Record < string, {
+    productName: string;strainType: string;totalQuantity: number
+  } > = {};
+
+  for (const order of filteredOrders) {
+    for (const product of order.productsOrdered) {
+      if (relevantTemplateIds.has(product.productTemplateId)) {
+        if (!productSales[product.productTemplateId]) {
+          const template = allTemplates.find(t => t.id === product.productTemplateId);
+          if (template) {
+            productSales[product.productTemplateId] = {
+              productName: template.productName,
+              strainType: template.strainType,
+              totalQuantity: 0,
+            };
+          }
+        }
+        if (productSales[product.productTemplateId]) {
+          productSales[product.productTemplateId].totalQuantity += product.quantity;
+        }
+      }
+    }
+  }
+
+  const salesDataForAI = Object.entries(productSales).map(([id, data]) => ({
+    productTemplateId: id,
+    productName: data.productName,
+    strainType: data.strainType,
+    totalQuantitySold: data.totalQuantity,
+  }));
+
+  // 3. Call the AI flow with the user's question and the pre-processed data.
+  const flowInput = {
+    naturalLanguageQuery: input.naturalLanguageQuery,
+    salesData: salesDataForAI
+  };
+
+  return generateSalesInsightsFlow(flowInput);
 }
 
+
+// This is the Genkit flow definition.
 const prompt = ai.definePrompt({
-  name: 'generateWholesaleInsightsPrompt',
-  input: {schema: GenerateSalesInsightsInputSchema},
-  output: {schema: GenerateSalesInsightsOutputSchema},
-  prompt: `You are an AI business analyst for a cannabis manufacturing lab. Your role is to analyze wholesale order data, product inventory (templates and specific batches), and dispensary information to provide actionable insights.
+  name: 'conversationalSalesAnalysisPrompt',
+  input: {
+    schema: z.object({
+      naturalLanguageQuery: z.string(),
+      salesData: z.array(SalesInsightsProductSchema),
+    }),
+  },
+  output: {
+    schema: GenerateSalesInsightsOutputSchema
+  },
+  prompt: `You are an expert sales analyst for a cannabis manufacturer.
+  Your task is to analyze the provided sales data to answer the user's question.
 
-  Data Provided:
-  - Product Templates: General definitions of products (name, category, strain).
-  - Product Batches: Specific METRC-tagged batches of products, including their cannabinoid percentages, stock levels, and price. Each batch links to a product template.
-  - Wholesale Orders: Records of orders placed by dispensaries. Each ordered item specifies the product template, the specific product batch sold (with its METRC ID and cannabinoid profile at sale), quantity, and subtotal. Orders also include METRC Manifest IDs.
-  - Dispensaries: Information about the dispensaries that are customers.
+  User's Question: "{{{naturalLanguageQuery}}}"
 
-  Analysis Task:
-  Based on the provided data (Product Templates: {{{json productTemplates}}}, Product Batches: {{{json productBatches}}}, Wholesale Orders: {{{json wholesaleOrders}}}, Dispensaries: {{{json dispensaries}}}), perform a comprehensive analysis.
-  
-  Key considerations:
-  - Link ordered items back to specific Product Batches using productBatchId to analyze performance of individual batches (e.g., sales velocity, dispensary preference for specific METRC IDs or cannabinoid profiles within the same product template).
-  - Aggregate batch data to analyze Product Template performance (e.g., overall demand for "Green Crack Flower" across all its batches).
+  Filtered Sales Data (product name, strain, and total quantity sold in the period):
+  {{{json salesData}}}
 
-  {{#if analysisFocus}}
-  Specifically focus on: {{{analysisFocus}}}
-  {{else}}
-  Consider the following areas:
-  1.  Identify top-selling Product Templates and top-selling individual Product Batches (by METRC ID).
-  2.  Analyze purchasing patterns of different dispensaries. Do they prefer specific Product Templates, or even specific batches (e.g., higher THC batches of the same product)?
-  3.  Detect trends in demand for Product Templates and specific cannabinoid profiles (e.g., are higher THC batches selling faster?).
-  4.  Assess inventory levels of Product Batches against their sales velocity. Highlight any batches with low stock that are in high demand, or high stock with low demand.
-  5.  Identify potential gaps in the product portfolio (based on Product Templates) or batch characteristics (e.g., need for more high-CBD batches of a popular template).
-  6.  Suggest strategies to optimize sales, such as promoting specific batches to certain dispensaries, or adjusting production focus based on batch performance.
-  7.  If there are significant gaps between current batch inventory/characteristics and dispensary needs/market demand, suggest exploring new raw material vendors or production adjustments for future batches.
-  {{/if}}
+  Based on the user's question and the provided data, perform the following actions:
+  1.  **summary**: Write a concise, natural language summary that directly answers the user's question. For example, if they ask for the best sellers, state what they are.
+  2.  **topProductsChartData**: Identify the top 5 products from the sales data based on 'totalQuantitySold'. Format this as a list of objects with 'name' and 'value' keys, where 'name' is the 'productName' and 'value' is the 'totalQuantitySold'.
+  3.  **detailedProductList**: Return the full list of products from the provided sales data. This list will be used to show a detailed breakdown in the UI, grouped by strain.
 
-  Output Requirements:
-  -   **insights**: Provide a detailed narrative report of your findings, including key observations, identified correlations, and overall business insights. Distinguish between template-level and batch-level findings.
-  -   **suggestedActions**: (Optional) List 3-5 concrete, actionable recommendations.
-  -   **warnings**: (Optional) List any potential risks or warnings.
-
-  Be concise, data-driven, and focus on providing practical value to the manufacturing lab's management.
+  Focus only on the data provided. Your analysis should be quantitative and directly address the user's query.
   `,
   config: {
-    safetySettings: [ 
-      { category: 'HARM_CATEGORY_DANGEROUS_CONTENT', threshold: 'BLOCK_ONLY_HIGH' },
-      { category: 'HARM_CATEGORY_HATE_SPEECH', threshold: 'BLOCK_MEDIUM_AND_ABOVE' },
-    ],
+    safetySettings: [{
+      category: 'HARM_CATEGORY_DANGEROUS_CONTENT',
+      threshold: 'BLOCK_ONLY_HIGH'
+    }, {
+      category: 'HARM_CATEGORY_HATE_SPEECH',
+      threshold: 'BLOCK_MEDIUM_AND_ABOVE'
+    }, ],
   }
 });
 
-const generateSalesInsightsFlow = ai.defineFlow(
-  {
-    name: 'generateWholesaleInsightsFlow',
-    inputSchema: GenerateSalesInsightsInputSchema,
-    outputSchema: GenerateSalesInsightsOutputSchema,
-  },
-  async input => {
-    const {output} = await prompt(input);
-    if (!output) {
-        throw new Error("AI failed to generate insights.");
-    }
-    return output;
+const generateSalesInsightsFlow = ai.defineFlow({
+  name: 'generateConversationalSalesInsightsFlow',
+  inputSchema: z.object({
+    naturalLanguageQuery: z.string(),
+    salesData: z.array(SalesInsightsProductSchema),
+  }),
+  outputSchema: GenerateSalesInsightsOutputSchema,
+}, async (input) => {
+  if (!input.salesData || input.salesData.length === 0) {
+    return {
+      summary: "No relevant sales data found for the selected filters. Please try expanding your date range or changing the product category.",
+      topProductsChartData: [],
+      detailedProductList: [],
+    };
   }
-);
+
+  const {
+    output
+  } = await prompt(input);
+  if (!output) {
+    throw new Error("AI failed to generate insights.");
+  }
+  return output;
+});
+
+    
