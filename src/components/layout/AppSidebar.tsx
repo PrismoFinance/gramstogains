@@ -10,7 +10,8 @@ import {
   SidebarMenu,
   SidebarMenuItem,
   SidebarMenuButton,
-  SidebarFooter
+  SidebarFooter,
+  SidebarSeparator,
 } from '@/components/ui/sidebar';
 import {
   LayoutDashboard,
@@ -48,13 +49,14 @@ export function AppSidebar({ user }: AppSidebarProps) {
 
   return (
     <>
-      <SidebarHeader className="border-b border-sidebar-border">
+      <SidebarHeader>
         <Link href="/dashboard" className="flex items-center justify-center p-2 text-lg font-semibold font-headline">
           <span className="text-foreground group-data-[collapsible=icon]:hidden">
             Grams to <span className="text-primary">Gains</span>
           </span>
         </Link>
       </SidebarHeader>
+      <SidebarSeparator />
       <SidebarContent>
         <SidebarMenu>
           {filteredNavItems.map((item) => (
