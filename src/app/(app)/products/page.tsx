@@ -4,9 +4,10 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { ProductTable } from '@/components/products/ProductTable';
 import { ProductDialog } from '@/components/products/ProductDialog';
-import { BatchDialog } from '@/components/products/BatchDialog'; // New import
+import { BatchDialog } from '@/components/products/BatchDialog';
+import { ProductImportDialog } from '@/components/products/ProductImportDialog'; // New import
 import { Button } from '@/components/ui/button';
-import { PlusCircle } from 'lucide-react';
+import { PlusCircle, Upload } from 'lucide-react'; // New import
 import { mockProductTemplates as initialMockProductTemplates, mockProductBatches as initialMockProductBatches } from '@/lib/mock-data';
 import type { ProductTemplate, ProductBatch } from '@/lib/types';
 import { useAuth } from '@/contexts/AuthContext';
@@ -20,12 +21,17 @@ const ALL_FILTER_VALUE = "_all_";
 export default function ProductsPage() {
   const [productTemplates, setProductTemplates] = useState<ProductTemplate[]>(initialMockProductTemplates);
   const [productBatches, setProductBatches] = useState<ProductBatch[]>(initialMockProductBatches);
-  const [isProductDialogOpen, setIsProductDialogOpen] = useState(false);
-  const [editingProductTemplate, setEditingProductTemplate] = useState<ProductTemplate | null>(null);
   
-  const [isBatchDialogOpen, setIsBatchDialogOpen] = useState(false); // State for BatchDialog
-  const [managingBatchesForTemplate, setManagingBatchesForTemplate] = useState<ProductTemplate | null>(null); // State for BatchDialog
+  // Dialog states
+  const [isProductDialogOpen, setIsProductDialogOpen] = useState(false);
+  const [isBatchDialogOpen, setIsBatchDialogOpen] = useState(false);
+  const [isImportDialogOpen, setIsImportDialogOpen] = useState(false); // New state
 
+  // Data for dialogs
+  const [editingProductTemplate, setEditingProductTemplate] = useState<ProductTemplate | null>(null);
+  const [managingBatchesForTemplate, setManagingBatchesForTemplate] = useState<ProductTemplate | null>(null);
+
+  // Filtering and searching states
   const [searchTerm, setSearchTerm] = useState('');
   const [productCategoryFilter, setProductCategoryFilter] = useState(ALL_FILTER_VALUE);
 
@@ -43,6 +49,7 @@ export default function ProductsPage() {
      return <p className="text-center py-10">Access Denied. Administrator role required.</p>;
   }
 
+  // Handlers for Product Templates
   const handleAddProductTemplate = () => {
     setEditingProductTemplate(null);
     setIsProductDialogOpen(true);
@@ -69,6 +76,7 @@ export default function ProductsPage() {
     toast({ title: editingProductTemplate ? 'Template Updated' : 'Template Added', description: `${template.productName} saved.`});
   };
 
+  // Handlers for Batches
   const handleManageBatches = (template: ProductTemplate) => {
     setManagingBatchesForTemplate(template);
     setIsBatchDialogOpen(true);
@@ -90,6 +98,21 @@ export default function ProductsPage() {
     toast({ title: 'Batch Deleted', description: 'Batch removed successfully.'});
   };
 
+  // Handler for CSV Import
+  const handleDataImport = (newTemplates: ProductTemplate[], newBatches: ProductBatch[]) => {
+    setProductTemplates(prev => {
+        const existingIds = new Set(prev.map(p => p.id));
+        const trulyNewTemplates = newTemplates.filter(t => !existingIds.has(t.id));
+        return [...prev, ...trulyNewTemplates];
+    });
+    setProductBatches(prev => [...prev, ...newBatches]);
+    toast({
+        title: "Import Successful",
+        description: `${newBatches.length} batches and ${newTemplates.length} new templates were imported.`
+    });
+  };
+
+
   const filteredProductTemplates = useMemo(() => productTemplates.filter(template =>
     template.productName.toLowerCase().includes(searchTerm.toLowerCase()) &&
     (productCategoryFilter === ALL_FILTER_VALUE || template.productCategory === productCategoryFilter)
@@ -102,13 +125,19 @@ export default function ProductsPage() {
     <div className="space-y-6">
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <div>
-          <h1 className="text-3xl font-headline font-bold">Product Template Management</h1>
+          <h1 className="text-3xl font-headline font-bold">Product Management</h1>
           <p className="text-muted-foreground">Manage your product definitions and their inventory batches.</p>
         </div>
-        <Button onClick={handleAddProductTemplate} className="bg-accent hover:bg-accent/90 text-accent-foreground">
-          <PlusCircle className="mr-2 h-5 w-5" />
-          Add New Product Template
-        </Button>
+        <div className="flex gap-2">
+            <Button onClick={() => setIsImportDialogOpen(true)} variant="outline">
+                <Upload className="mr-2 h-5 w-5" />
+                Import from CSV
+            </Button>
+            <Button onClick={handleAddProductTemplate} className="bg-accent hover:bg-accent/90 text-accent-foreground">
+                <PlusCircle className="mr-2 h-5 w-5" />
+                Add New Template
+            </Button>
+        </div>
       </div>
       
       <div className="flex flex-col md:flex-row gap-4 mb-4 p-4 border rounded-lg bg-card">
@@ -135,7 +164,7 @@ export default function ProductsPage() {
         productBatches={productBatches}
         onEdit={handleEditProductTemplate}
         onDelete={handleDeleteProductTemplate}
-        onManageBatches={handleManageBatches} // Pass new handler
+        onManageBatches={handleManageBatches}
       />
       <ProductDialog
         isOpen={isProductDialogOpen}
@@ -151,11 +180,17 @@ export default function ProductsPage() {
             setManagingBatchesForTemplate(null);
           }}
           productTemplate={managingBatchesForTemplate}
-          allProductBatches={productBatches} // Pass all batches
+          allProductBatches={productBatches}
           onSaveBatch={handleSaveBatch}
           onDeleteBatch={handleDeleteBatch}
         />
       )}
+      <ProductImportDialog
+        isOpen={isImportDialogOpen}
+        onClose={() => setIsImportDialogOpen(false)}
+        onImport={handleDataImport}
+        existingTemplates={productTemplates}
+      />
     </div>
   );
 }
