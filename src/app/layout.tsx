@@ -12,8 +12,6 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { ChevronDown } from 'lucide-react';
-import { AppHeader } from '@/components/layout/AppHeader';
-import { useAuth } from '@/contexts/AuthContext';
 
 
 export const metadata: Metadata = {
