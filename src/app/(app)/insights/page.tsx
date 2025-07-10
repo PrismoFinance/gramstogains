@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { Lightbulb, Loader2, AlertTriangle, Search, PieChartIcon, List } from 'lucide-react';
+import { Lightbulb, Loader2, AlertTriangle, Search, PieChartIcon, List, FileText } from 'lucide-react';
 import { generateSalesInsights, type GenerateSalesInsightsOutput, type SalesInsightsProduct } from '@/ai/flows/generate-sales-insights';
 import { mockProductTemplates, mockWholesaleOrders } from '@/lib/mock-data';
 import { useToast } from '@/hooks/use-toast';
@@ -109,10 +109,10 @@ export default function AiInsightsPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <div>
           <h1 className="text-3xl font-headline font-bold flex items-center">
-            <Lightbulb className="mr-3 h-8 w-8 text-accent" />
+            <Lightbulb className="mr-3 h-8 w-8 text-primary" />
             Conversational Sales Analysis
           </h1>
           <p className="text-muted-foreground">Ask questions about your sales data to uncover trends and opportunities.</p>
@@ -196,11 +196,11 @@ export default function AiInsightsPage() {
         <div className="space-y-6">
             <Card className="shadow-xl">
                 <CardHeader>
-                    <CardTitle>Analysis Summary</CardTitle>
+                    <CardTitle className="flex items-center"><FileText className="mr-2 h-5 w-5 text-primary" /> Analysis Summary</CardTitle>
                     <CardDescription>A brief summary of the findings based on your question.</CardDescription>
                 </CardHeader>
                 <CardContent>
-                    <div className="prose prose-sm dark:prose-invert max-w-none p-4 bg-muted/30 rounded-md whitespace-pre-wrap">
+                    <div className="prose prose-sm dark:prose-invert max-w-none p-4 bg-muted/30 rounded-md whitespace-pre-wrap font-sans">
                     {insightsResult.summary}
                     </div>
                 </CardContent>
@@ -270,5 +270,3 @@ export default function AiInsightsPage() {
     </div>
   );
 }
-
-    

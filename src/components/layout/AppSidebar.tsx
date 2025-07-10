@@ -35,7 +35,7 @@ const navItems = [
   { href: '/sales/reports', label: 'Order Reports', icon: FileText, roles: ['administrator', 'sales_representative'] }, 
   { href: '/products', label: 'Products', icon: ShoppingBag, roles: ['administrator'] },
   { href: '/dispensaries', label: 'Dispensaries', icon: Building, roles: ['administrator'] }, 
-  { href: '/insights', label: 'AI Insights', icon: Lightbulb, roles: ['administrator'] },
+  { href: '/insights', label: 'Sales Analytics', icon: Lightbulb, roles: ['administrator'] },
   // { href: '/users', label: 'User Management', icon: Users, roles: ['administrator'] },
   // { href: '/settings', label: 'Settings', icon: Settings, roles: ['administrator', 'sales_representative'] },
 ];
