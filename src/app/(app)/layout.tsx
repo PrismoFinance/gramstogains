@@ -21,11 +21,6 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
     }
   }, [user, isLoading, router]);
 
-  // If we're on the landing page, don't show the app layout
-  if (pathname === '/') {
-    return <>{children}</>
-  }
-
   if (isLoading || !user) {
     // Basic loading skeleton for the whole app layout
     return (

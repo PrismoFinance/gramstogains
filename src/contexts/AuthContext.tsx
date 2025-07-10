@@ -46,7 +46,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const logout = () => {
     setUser(null);
     localStorage.removeItem('cannasale-user');
-    router.push('/login');
+    router.push('/');
   };
 
   return (

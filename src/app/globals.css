@@ -4,95 +4,95 @@
 
 @layer base {
   :root {
-    --background: 200 13% 10%; /* Dark Blue Grey */
-    --foreground: 0 0% 98%;
+    --background: 0 0% 0%; /* Black */
+    --foreground: 240 5% 96%; /* Light Grey */
 
-    --card: 200 13% 14%;
-    --card-foreground: 0 0% 98%;
+    --card: 240 4% 10%;
+    --card-foreground: 240 5% 96%;
 
-    --popover: 200 13% 8%;
-    --popover-foreground: 0 0% 98%;
+    --popover: 240 4% 8%;
+    --popover-foreground: 240 5% 96%;
 
-    --primary: 98 62% 51%; /* #66cc66 - a vibrant, techy green */
-    --primary-foreground: 200 13% 10%;
+    --primary: 158 100% 33%; /* #00A86B - Emerald Green */
+    --primary-foreground: 0 0% 100%;
 
-    --secondary: 275 22% 62%; /* #9e8aaf Muted Purple */
-    --secondary-foreground: 0 0% 98%;
+    --secondary: 257 50% 60%; /* #9966CC - Amethyst Purple */
+    --secondary-foreground: 0 0% 100%;
 
-    --muted: 200 13% 20%;
-    --muted-foreground: 200 13% 69%;
+    --muted: 240 4% 15%;
+    --muted-foreground: 240 4% 65%;
 
-    --accent: 291 80% 65%; /* #d980ff - Orchid */
-    --accent-foreground: 200 13% 10%;
+    --accent: 75 100% 50%; /* #CCFF00 - Electric Lime */
+    --accent-foreground: 240 10% 4%;
 
     --destructive: 0 63% 51%;
     --destructive-foreground: 0 0% 98%;
 
-    --border: 200 13% 20%;
-    --input: 200 13% 20%;
-    --ring: 98 62% 51%; /* ring color to match primary */
+    --border: 240 4% 20%;
+    --input: 240 4% 12%;
+    --ring: 158 100% 33%;
 
-    --chart-1: 98 62% 51%; /* primary */
-    --chart-2: 291 80% 65%; /* accent */
-    --chart-3: 275 22% 62%; /* secondary */
+    --chart-1: 158 100% 33%; /* primary */
+    --chart-2: 257 50% 60%; /* secondary */
+    --chart-3: 75 100% 50%; /* accent */
     --chart-4: 51 100% 50%; /* gold/yellow */
-    --chart-5: 200 13% 69%; /* muted-foreground */
+    --chart-5: 240 4% 65%; /* muted-foreground */
 
     --radius: 0.5rem;
 
-    --sidebar-background: 200 13% 8%;
-    --sidebar-foreground: 0 0% 98%;
-    --sidebar-primary: 98 62% 51%;
-    --sidebar-primary-foreground: 200 13% 10%;
-    --sidebar-accent: 200 13% 18%;
-    --sidebar-accent-foreground: 0 0% 98%;
-    --sidebar-border: 200 13% 20%;
-    --sidebar-ring: 98 62% 51%;
+    --sidebar-background: 240 4% 5%;
+    --sidebar-foreground: 240 5% 96%;
+    --sidebar-primary: 158 100% 33%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 240 4% 12%;
+    --sidebar-accent-foreground: 240 5% 96%;
+    --sidebar-border: 240 4% 15%;
+    --sidebar-ring: 158 100% 33%;
   }
 
   .dark {
-    --background: 200 13% 10%; /* Dark Blue Grey */
-    --foreground: 0 0% 98%;
+    --background: 0 0% 0%; /* Black */
+    --foreground: 240 5% 96%; /* Light Grey */
 
-    --card: 200 13% 14%;
-    --card-foreground: 0 0% 98%;
+    --card: 240 4% 10%;
+    --card-foreground: 240 5% 96%;
 
-    --popover: 200 13% 8%;
-    --popover-foreground: 0 0% 98%;
+    --popover: 240 4% 8%;
+    --popover-foreground: 240 5% 96%;
 
-    --primary: 98 62% 51%; /* #66cc66 - a vibrant, techy green */
-    --primary-foreground: 200 13% 10%;
+    --primary: 158 100% 33%; /* #00A86B - Emerald Green */
+    --primary-foreground: 0 0% 100%;
 
-    --secondary: 275 22% 62%; /* #9e8aaf Muted Purple */
-    --secondary-foreground: 0 0% 98%;
+    --secondary: 257 50% 60%; /* #9966CC - Amethyst Purple */
+    --secondary-foreground: 0 0% 100%;
 
-    --muted: 200 13% 20%;
-    --muted-foreground: 200 13% 69%;
+    --muted: 240 4% 15%;
+    --muted-foreground: 240 4% 65%;
 
-    --accent: 291 80% 65%; /* #d980ff - Orchid */
-    --accent-foreground: 200 13% 10%;
+    --accent: 75 100% 50%; /* #CCFF00 - Electric Lime */
+    --accent-foreground: 240 10% 4%;
 
     --destructive: 0 63% 51%;
     --destructive-foreground: 0 0% 98%;
 
-    --border: 200 13% 20%;
-    --input: 200 13% 20%;
-    --ring: 98 62% 51%; /* ring color to match primary */
+    --border: 240 4% 20%;
+    --input: 240 4% 12%;
+    --ring: 158 100% 33%;
     
-    --chart-1: 98 62% 51%; /* primary */
-    --chart-2: 291 80% 65%; /* accent */
-    --chart-3: 275 22% 62%; /* secondary */
+    --chart-1: 158 100% 33%; /* primary */
+    --chart-2: 257 50% 60%; /* secondary */
+    --chart-3: 75 100% 50%; /* accent */
     --chart-4: 51 100% 50%; /* gold/yellow */
-    --chart-5: 200 13% 69%; /* muted-foreground */
+    --chart-5: 240 4% 65%; /* muted-foreground */
 
-    --sidebar-background: 200 13% 8%;
-    --sidebar-foreground: 0 0% 98%;
-    --sidebar-primary: 98 62% 51%;
-    --sidebar-primary-foreground: 200 13% 10%;
-    --sidebar-accent: 200 13% 18%;
-    --sidebar-accent-foreground: 0 0% 98%;
-    --sidebar-border: 200 13% 20%;
-    --sidebar-ring: 98 62% 51%;
+    --sidebar-background: 240 4% 5%;
+    --sidebar-foreground: 240 5% 96%;
+    --sidebar-primary: 158 100% 33%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 240 4% 12%;
+    --sidebar-accent-foreground: 240 5% 96%;
+    --sidebar-border: 240 4% 15%;
+    --sidebar-ring: 158 100% 33%;
   }
 }
 
