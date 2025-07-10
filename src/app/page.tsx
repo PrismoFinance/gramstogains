@@ -62,17 +62,17 @@ export default function LandingPage() {
             data-ai-hint="cannabis cultivation"
           />
           <div className="relative z-10 p-4 max-w-4xl mx-auto">
-            <h1 className="text-4xl md:text-6xl font-bold font-headline mb-4 drop-shadow-lg text-foreground">
+            <h1 className="text-4xl md:text-6xl font-bold font-headline mb-4 drop-shadow-lg text-white">
               Precision Software for the Modern Cannabis Manufacturer
             </h1>
-            <p className="text-lg md:text-xl mb-8 max-w-2xl mx-auto drop-shadow-md text-muted-foreground">
+            <p className="text-lg md:text-xl mb-8 max-w-2xl mx-auto drop-shadow-md text-gray-200">
               Streamline your seed-to-sale workflow, manage inventory with unparalleled accuracy, and unlock data-driven insights to cultivate your business growth.
             </p>
             <div className="space-x-4">
               <Button asChild size="lg">
                 <Link href="/dashboard">Get Started</Link>
               </Button>
-              <Button asChild size="lg" variant="outline" className="bg-white/10 backdrop-blur-sm border-foreground/20 text-foreground hover:bg-white/20">
+              <Button asChild size="lg" variant="outline" className="bg-white/10 backdrop-blur-sm border-white/20 text-white hover:bg-white/20">
                 <Link href="#">Learn More</Link>
               </Button>
             </div>
