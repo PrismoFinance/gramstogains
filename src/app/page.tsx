@@ -58,7 +58,7 @@ export default function LandingPage() {
             alt="Cannabis cultivation background"
             layout="fill"
             objectFit="cover"
-            className="absolute z-0 opacity-20"
+            className="absolute z-0"
             data-ai-hint="cannabis cultivation"
           />
           <div className="relative z-10 p-4 max-w-4xl mx-auto">
