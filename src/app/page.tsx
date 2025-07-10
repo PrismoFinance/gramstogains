@@ -8,16 +8,14 @@ import { ChevronDown } from 'lucide-react';
 function PublicNavbar() {
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-      <div className="container h-14 flex items-center justify-between">
-        {/* Left Aligned: Logo */}
-        <div className="flex items-center">
+      <div className="container flex h-14 items-center">
+        <div className="flex-1 flex items-center justify-start">
           <Link href="/" className="flex items-center space-x-2">
             <span className="font-bold">Grams to Gains</span>
           </Link>
         </div>
 
-        {/* Centered: Navigation Links */}
-        <nav className="hidden md:flex items-center space-x-6 text-sm font-medium">
+        <nav className="hidden flex-2 md:flex items-center justify-center space-x-6 text-sm font-medium">
           <DropdownMenu>
             <DropdownMenuTrigger className="flex items-center hover:text-accent transition-colors">
               Products <ChevronDown className="h-4 w-4 ml-1" />
@@ -34,8 +32,7 @@ function PublicNavbar() {
           <Link href="#" className="hover:text-accent transition-colors">About Us</Link>
         </nav>
 
-        {/* Right Aligned: Auth Buttons */}
-        <div className="flex items-center justify-end space-x-2">
+        <div className="flex-1 flex items-center justify-end space-x-2">
           <Button asChild variant="ghost">
             <Link href="/login">Login</Link>
           </Button>
@@ -47,6 +44,7 @@ function PublicNavbar() {
     </header>
   );
 }
+
 
 export default function LandingPage() {
   return (
