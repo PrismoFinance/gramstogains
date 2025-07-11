@@ -21,7 +21,7 @@ export default function AboutUsPage() {
 
       {/* Our Mission */}
       <section className="py-16 md:py-24">
-        <div className="container grid md:grid-cols-2 gap-12 items-center">
+        <div className="container grid md:grid-cols-2 gap-12 items-center px-4">
             <div>
                 <Image
                     src="/images/mission.jpeg"
