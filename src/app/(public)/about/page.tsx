@@ -7,12 +7,12 @@ export default function AboutUsPage() {
   return (
     <div className="bg-background">
       {/* Hero Section */}
-      <section className="relative py-24 md:py-32 bg-muted/30">
+      <section className="relative py-24 md:py-32 bg-primary">
         <div className="container text-center">
-            <h1 className="text-4xl md:text-5xl font-bold font-headline mb-4">
+            <h1 className="text-4xl md:text-5xl font-bold font-headline mb-4 text-primary-foreground">
               Cultivating Growth Through Technology
             </h1>
-            <p className="text-lg md:text-xl max-w-3xl mx-auto text-muted-foreground">
+            <p className="text-lg md:text-xl max-w-3xl mx-auto text-primary-foreground/90">
               We are a team of technologists and industry experts passionate about providing cannabis manufacturers with the tools they need to thrive in a complex market.
             </p>
         </div>
