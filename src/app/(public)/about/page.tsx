@@ -1,3 +1,4 @@
+
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
@@ -22,13 +23,12 @@ export default function AboutUsPage() {
       <section className="py-16 md:py-24">
         <div className="container grid md:grid-cols-2 gap-12 items-center">
             <div>
-                <Image 
-                    src="https://placehold.co/600x400.png"
-                    alt="Team working together"
+                <Image
+                    src="/images/mission.jpeg"
+                    alt="Our mission"
                     width={600}
                     height={400}
                     className="rounded-lg shadow-xl"
-                    data-ai-hint="team collaboration"
                 />
             </div>
             <div>
