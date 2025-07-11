@@ -9,7 +9,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { ChevronDown, Package } from 'lucide-react';
+import { ChevronDown, Leaf } from 'lucide-react';
 
 export function PublicNavbar() {
   return (
@@ -17,6 +17,7 @@ export function PublicNavbar() {
       <div className="container flex h-14 items-center">
         <div className="mr-4 flex items-center">
           <Link href="/" className="flex items-center space-x-2">
+            <Leaf className="h-6 w-6 text-primary" />
             <span className="font-bold">Grams to Gains</span>
           </Link>
         </div>
