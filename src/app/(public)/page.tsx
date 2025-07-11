@@ -23,7 +23,7 @@ export default function LandingPage() {
           src="/images/landing.jpeg"
           alt="Cannabis cultivation background"
           fill
-          objectFit="cover"
+          style={{ objectFit: "cover" }}
           className="absolute z-0"
           data-ai-hint="cannabis cultivation"
           priority
@@ -37,7 +37,7 @@ export default function LandingPage() {
             Streamline your seed-to-sale workflow, manage inventory with unparalleled accuracy, and unlock data-driven insights to cultivate your business growth.
           </p>
           <div className="space-x-4">
-            <Button asChild size="lg" className="bg-primary hover:bg-primary/90">
+            <Button asChild size="lg">
               <Link href="/dashboard">Get Started</Link>
             </Button>
             <Button asChild size="lg" variant="outline" className="bg-white/20 backdrop-blur-sm border-white/30 text-white hover:bg-white/30">
