@@ -3,15 +3,6 @@ import type { Metadata } from 'next';
 import './globals.css';
 import { Toaster } from "@/components/ui/toaster";
 import { AuthProvider } from '@/contexts/AuthContext';
-import Link from 'next/link';
-import { Button } from '@/components/ui/button';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { ChevronDown } from 'lucide-react';
 
 
 export const metadata: Metadata = {
