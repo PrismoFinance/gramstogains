@@ -1,3 +1,4 @@
+
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
@@ -30,7 +31,7 @@ const features = [
   }
 ];
 
-export default function ProductsPage() {
+export default function FeaturesPage() {
   return (
     <div className="bg-background">
       <section className="py-16 md:py-24 text-center bg-muted/30">
