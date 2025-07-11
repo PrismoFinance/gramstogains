@@ -29,7 +29,7 @@ export function PublicNavbar() {
           <Link href="/contact" className="hover:text-primary transition-colors">Contact</Link>
         </nav>
 
-        <div className="flex items-center justify-end space-x-2">
+        <div className="flex items-center justify-end space-x-2 ml-4">
           <Button asChild variant="ghost">
             <Link href="/login">Login</Link>
           </Button>
